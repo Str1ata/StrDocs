@@ -17,7 +17,7 @@
         'side.playground': ['Execute seu exemplo', 'Run your example'],
 
         'hero.eyebrow': ['DOCUMENTAÇÃO OFICIAL · PT-BR', 'OFFICIAL DOCUMENTATION · EN-US'],
-        'hero.title': ['Construa com a <span>Str</span>&#8288;.', 'Build with <span>Str</span>&#8288;.'],
+        'hero.title': ['Construa com a <b class="title-word"><span>Str</span>.</b>', 'Build with <b class="title-word"><span>Str</span>.</b>'],
         'hero.desc': ['Referência das APIs públicas, dos statebags e dos padrões de integração da framework para FiveM, SixM e RedM.', 'Reference for the public APIs, statebags and integration patterns of the framework for FiveM, SixM and RedM.'],
         'hero.cta1': ['Explorar APIs', 'Explore APIs'],
         'hero.cta2': ['Ver statebags', 'View statebags'],

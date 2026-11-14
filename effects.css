@@ -816,41 +816,21 @@ textarea.pg-input {
 }
 
 /* ---------- Espaço em parallax (space.js) ---------- */
-.bg-space,
-.bg-objects {
+.bg-space {
     inset: 0;
     pointer-events: none;
     position: absolute;
+    /* mais forte nas laterais, discreto atrás da coluna de leitura */
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 14%, rgba(0, 0, 0, .4) 34%, rgba(0, 0, 0, .4) 66%, #000 86%, #000 100%);
+    mask-image: linear-gradient(90deg, #000 0%, #000 14%, rgba(0, 0, 0, .4) 34%, rgba(0, 0, 0, .4) 66%, #000 86%, #000 100%);
 }
 
-.bg-object {
-    filter: blur(var(--blur, 0)) drop-shadow(0 0 18px rgba(0, 229, 255, .25));
-    height: var(--size);
-    left: 0;
-    opacity: var(--op, .4);
-    position: absolute;
-    top: 0;
-    width: var(--size);
-    will-change: transform;
-}
-
-.bg-object svg {
-    display: block;
-    height: 100%;
-    overflow: visible;
-    width: 100%;
-}
-
-.bg-planet {
-    filter: blur(var(--blur, 0)) drop-shadow(0 0 30px rgba(99, 102, 241, .25));
-}
-
-.bg-atom .atom-svg {
-    animation: atom-breathe 7s ease-in-out infinite;
-}
-
-@keyframes atom-breathe {
-    50% { transform: scale(1.06); }
+@media (max-width: 720px) {
+    .bg-space {
+        -webkit-mask-image: none;
+        mask-image: none;
+        opacity: .7;
+    }
 }
 
 /* Brilhos e grade também acompanham a rolagem, mais devagar que o conteúdo */
@@ -862,8 +842,9 @@ textarea.pg-input {
     background-position: 0 calc(var(--sy, 0) * -0.12px);
 }
 
-@media (max-width: 720px) {
-    .bg-object {
-        opacity: calc(var(--op, .4) * .7);
-    }
+
+/* "Str." quebra junto, nunca o ponto sozinho */
+.hero h1 .title-word {
+    font-weight: inherit;
+    white-space: nowrap;
 }
