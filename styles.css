@@ -1212,9 +1212,17 @@ select.pg-input optgroup {
 /* Logo no átomo via CSS (renderiza no GitHub Pages) */
 .art-core {
     background-image:
-        url("logov1-dark.svg"),
+        url("./logov1-dark.svg"),
         radial-gradient(circle at 34% 28%, #1f4a8a, #0f2a55 60%, #081a38 100%);
     background-position: center, center;
     background-repeat: no-repeat, no-repeat;
     background-size: 100px auto, cover;
+}
+
+.pg-line {
+    overflow-wrap: anywhere;
+}
+
+.pg-line pre {
+    white-space: pre-wrap;
 }
