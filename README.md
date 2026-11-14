@@ -1,14 +1,12 @@
-# Str Framework Docs
+# StrDocs
 
-Site estático de documentação da framework Str (FiveM/RedM), em português.
+Documentação da framework Str para FiveM, SixM e RedM, com referência das APIs client/server, funções `Str.functions`, statebags e exemplos práticos.
 
-## Desenvolvimento local
-
-Abra `index.html` no navegador. Não há etapa de build nem dependências de pacote; a busca e a navegação rodam no browser.
+Site estático em português. Abra `index.html` no navegador para consultar a documentação; não há etapa de build nem dependências de pacote.
 
 ## GitHub Pages
 
-O workflow em `.github/workflows/pages.yml` publica o conteúdo deste repositório em cada push na branch `main`. No GitHub, habilite Pages em **Settings → Pages → Build and deployment → GitHub Actions**. O workflow também pode ser iniciado manualmente em **Actions**.
+O workflow em `.github/workflows/pages.yml` publica o site a cada push na branch `main`. No GitHub, habilite Pages em **Settings → Pages → Build and deployment → GitHub Actions**. O workflow também pode ser iniciado manualmente em **Actions**.
 
 ## Atualização da referência
 
