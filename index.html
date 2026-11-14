@@ -10,31 +10,52 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./effects.css">
+    <script>
+        /* Liga os efeitos cedo para não piscar; se effects.js não carregar, mostra tudo. */
+        document.documentElement.classList.add('fx');
+        setTimeout(function () { if (!window.__strFx) document.documentElement.classList.remove('fx'); }, 2500);
+    </script>
+    <script src="./i18n.js" defer></script>
     <script src="./app.js" defer></script>
     <script src="./playground.js" defer></script>
+    <script src="./effects.js" defer></script>
 </head>
 <body>
+    <div class="bg-fx" aria-hidden="true">
+        <span class="bg-grid"></span>
+        <span class="bg-blob blob-a"></span>
+        <span class="bg-blob blob-b"></span>
+        <span class="bg-blob blob-c"></span>
+    </div>
+
     <header class="topbar">
-        <a class="brand" href="#inicio" aria-label="Str Framework, início">
+        <span class="scroll-progress" aria-hidden="true"></span>
+        <a class="brand" href="#inicio" data-i18n-attr="aria-label:brand.aria">
             <span class="brand-mark">S</span>
             <span>Str <span class="brand-muted">Framework</span></span>
         </a>
-        <nav class="top-links" aria-label="Links externos">
-            <a href="https://github.com/Str1ata/StrDocs" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+        <nav class="top-links" data-i18n-attr="aria-label:nav.aria">
+            <div class="lang-switch" role="group" data-i18n-attr="aria-label:lang.aria" data-active="pt-BR">
+                <span class="lang-thumb" aria-hidden="true"></span>
+                <button type="button" class="lang-option" data-lang-option="pt-BR" aria-pressed="true"><svg class="lang-flag" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="2" fill="#009c3b"/><path d="M10 2 18 7 10 12 2 7z" fill="#ffdf00"/><circle cx="10" cy="7" r="3" fill="#002776"/></svg>PT-BR</button>
+                <button type="button" class="lang-option" data-lang-option="en-US" aria-pressed="false"><svg class="lang-flag" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="2" fill="#fff"/><path d="M0 1h20M0 3.2h20M0 5.4h20M0 7.6h20M0 9.8h20M0 12h20" stroke="#b22234" stroke-width="1.1"/><rect width="9" height="7.6" fill="#3c3b6e"/></svg>EN-US</button>
+            </div>
+            <a class="github-link" href="https://github.com/Str1ata/StrDocs" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
         </nav>
     </header>
 
     <div class="layout" id="inicio">
         <aside class="sidebar">
-            <p class="eyebrow">GUIA DA FRAMEWORK</p>
-            <a class="side-link active" href="#inicio">Visão geral</a>
-            <p class="side-heading">Referência</p>
-            <a class="side-link" href="#api">Str.functions</a>
+            <p class="eyebrow" data-i18n="side.eyebrow">GUIA DA FRAMEWORK</p>
+            <a class="side-link active" href="#inicio" data-spy="inicio" data-i18n="side.overview">Visão geral</a>
+            <p class="side-heading" data-i18n="side.reference">Referência</p>
+            <a class="side-link" href="#api" data-spy="api">Str.functions</a>
             <a class="side-link nested" href="#api" data-tab-target="server">Server</a>
             <a class="side-link nested" href="#api" data-tab-target="client">Client</a>
-            <a class="side-link" href="#statebags">Statebags</a>
-            <a class="side-link" href="#exemplos">Exemplos práticos</a>
-            <a class="side-link" href="#playground-section">Execute seu exemplo</a>
+            <a class="side-link" href="#statebags" data-spy="statebags">Statebags</a>
+            <a class="side-link" href="#exemplos" data-spy="exemplos" data-i18n="side.examples">Exemplos práticos</a>
+            <a class="side-link" href="#playground-section" data-spy="playground-section" data-i18n="side.playground">Execute seu exemplo</a>
             <div class="sidebar-note">
                 <span class="status-dot"></span>
                 FiveM · SixM · RedM · Lua 5.4
@@ -44,205 +65,176 @@
         <main>
             <section class="hero">
                 <div class="hero-copy">
-                    <p class="eyebrow">DOCUMENTAÇÃO OFICIAL · PT-BR</p>
-                    <h1>Construa com a <span>Str</span>&#8288;.</h1>
-                    <p class="hero-description">Referência das APIs públicas, dos statebags e dos padrões de integração da framework para FiveM, SixM e RedM.</p>
-                    <div class="hero-actions">
-                        <a class="button button-primary" href="#api">Explorar APIs <span aria-hidden="true">→</span></a>
-                        <a class="button button-secondary" href="#statebags">Ver statebags</a>
+                    <p class="eyebrow hero-in" style="--d:0" data-i18n="hero.eyebrow">DOCUMENTAÇÃO OFICIAL · PT-BR</p>
+                    <h1 class="hero-in" style="--d:1" data-i18n-html="hero.title">Construa com a <span>Str</span>&#8288;.</h1>
+                    <p class="hero-description hero-in" style="--d:2" data-i18n="hero.desc">Referência das APIs públicas, dos statebags e dos padrões de integração da framework para FiveM, SixM e RedM.</p>
+                    <div class="hero-actions hero-in" style="--d:3">
+                        <a class="button button-primary" href="#api"><span data-i18n="hero.cta1">Explorar APIs</span> <span aria-hidden="true">→</span></a>
+                        <a class="button button-secondary" href="#statebags" data-i18n="hero.cta2">Ver statebags</a>
                     </div>
                 </div>
-                <div class="hero-art" aria-hidden="true">
+                <div class="hero-art hero-in" style="--d:2" aria-hidden="true">
                     <div class="art-orbit orbit-one"></div>
                     <div class="art-orbit orbit-two"></div>
-                    <div class="art-core">
-                        
-                    </div>
+                    <div class="art-orbit orbit-three"></div>
+                    <div class="art-core"></div>
                     <span class="art-tag tag-client">CLIENT</span>
                     <span class="art-tag tag-server">SERVER</span>
                     <span class="art-tag tag-state">STATE</span>
                 </div>
             </section>
 
-            <section class="notice">
+            <section class="notice reveal">
                 <span class="notice-icon" aria-hidden="true">i</span>
-                <p>As funções de dados, economia, inventário e identidade são <strong>server-side</strong>. No client, use os helpers de tunnel para chamar funções registradas no server. As funções listadas refletem as definições encontradas em <code>Str.lua</code> e <code>client.lua</code>; módulos podem adicionar statebags próprios.</p>
+                <p data-i18n-html="notice"></p>
             </section>
 
             <section class="section" id="api">
-                <div class="section-heading">
+                <div class="section-heading reveal">
                     <div>
-                        <p class="eyebrow">REFERÊNCIA DA API</p>
+                        <p class="eyebrow" data-i18n="api.eyebrow">REFERÊNCIA DA API</p>
                         <h2>Str.functions</h2>
-                        <p class="section-intro">Pesquise por nome ou finalidade. Cada assinatura mostra os argumentos aceitos e o formato do retorno.</p>
+                        <p class="section-intro" data-i18n="api.intro"></p>
                     </div>
                     <label class="search-box">
                         <span class="search-icon" aria-hidden="true">⌕</span>
-                        <input id="api-search" type="search" placeholder="Buscar função..." autocomplete="off" aria-label="Buscar função">
-                        <kbd>⌘ K</kbd>
+                        <input id="api-search" type="search" autocomplete="off" data-i18n-attr="placeholder:api.search;aria-label:api.searchAria">
+                        <kbd>Ctrl K</kbd>
                     </label>
                 </div>
 
-                <div class="tabs" role="tablist" aria-label="Lado da API">
+                <div class="tabs reveal" role="tablist" data-i18n-attr="aria-label:api.tabsAria">
+                    <span class="tabs-thumb" aria-hidden="true"></span>
                     <button class="tab active" id="tab-server" role="tab" aria-selected="true" aria-controls="server-panel" data-tab="server">Server <span id="server-count" class="count"></span></button>
                     <button class="tab" id="tab-client" role="tab" aria-selected="false" aria-controls="client-panel" data-tab="client">Client <span id="client-count" class="count"></span></button>
                 </div>
 
                 <div id="server-panel" class="tab-panel" role="tabpanel" aria-labelledby="tab-server">
-                    <p class="side-note">Chamadas server-side: <code>Str.functions.nome(...)</code>. Também são registradas como exports pelo núcleo. Argumentos que identificam personagem devem vir de contexto confiável do servidor.</p>
+                    <p class="side-note" data-i18n-html="api.serverNote"></p>
                     <div id="server-api"></div>
                 </div>
                 <div id="client-panel" class="tab-panel" role="tabpanel" aria-labelledby="tab-client" hidden>
-                    <p class="side-note">O client expõe helpers para o tunnel. Use <code>syncTunnelFunction</code> para obter os valores de retorno da função registrada no server; <code>asyncTunnelFunction</code> dispara sem aguardar resposta.</p>
+                    <p class="side-note" data-i18n-html="api.clientNote"></p>
                     <div id="client-api"></div>
                 </div>
-                <p id="empty-search" class="empty-state" hidden>Nenhuma função corresponde à busca.</p>
+                <p id="empty-search" class="empty-state" hidden data-i18n="api.empty"></p>
             </section>
 
             <section class="section" id="statebags">
-                <div class="section-heading">
+                <div class="section-heading reveal">
                     <div>
-                        <p class="eyebrow">DADOS REATIVOS</p>
+                        <p class="eyebrow" data-i18n="state.eyebrow">DADOS REATIVOS</p>
                         <h2>Statebags</h2>
-                        <p class="section-intro">Chaves de estado publicadas pelo núcleo e pelos módulos presentes neste workspace.</p>
+                        <p class="section-intro" data-i18n="state.intro"></p>
                     </div>
                 </div>
-                <div class="state-intro">
-                    <p>Leia estado de jogador por <code>Player(source).state.chave</code> no server ou <code>LocalPlayer.state.chave</code> no client. Para entidades, use <code>Entity(entity).state.chave</code>. A flag <code>replicated</code> controla se a alteração é replicada; <code>true</code> não substitui a validação de dados no server.</p>
-                    <pre><code>-- Client: observar uma mudança replicada no jogador local
-AddStateBagChangeHandler('health', nil, function(bagName, key, value)
-    if bagName == ('player_' .. GetPlayerServerId(PlayerId())) then
-        print(('Novo %s: %s'):format(key, value))
-    end
-end)</code></pre>
+                <div class="state-intro reveal">
+                    <p data-i18n-html="state.body"></p>
+                    <pre><code data-i18n="state.code"></code></pre>
                 </div>
                 <div id="statebag-list" class="statebag-list"></div>
-                <p class="side-note">Chaves temporárias de cache e fila do núcleo que são limpas durante a inicialização não são tratadas como API pública estável. Consulte o código do módulo antes de depender de statebags específicos de uma extensão.</p>
+                <p class="side-note reveal" data-i18n="state.footnote"></p>
             </section>
 
             <section class="section" id="exemplos">
-                <div class="section-heading">
+                <div class="section-heading reveal">
                     <div>
-                        <p class="eyebrow">DO CÓDIGO AO RESULTADO</p>
-                        <h2>Exemplos práticos</h2>
-                        <p class="section-intro">Os comentários mostram o retorno esperado para os valores de exemplo.</p>
+                        <p class="eyebrow" data-i18n="ex.eyebrow">DO CÓDIGO AO RESULTADO</p>
+                        <h2 data-i18n="ex.title">Exemplos práticos</h2>
+                        <p class="section-intro" data-i18n="ex.intro"></p>
                     </div>
                 </div>
                 <div class="example-grid">
-                    <article class="example-card">
-                        <div class="card-topline"><span class="pill pill-server">SERVER</span><span>Identidade e saldo</span></div>
-                        <pre><code>local characterId = Str.functions.getCharacterId(source)
-if not characterId then return end
-
-local balance = Str.functions.getCharacterMoneyAmount(
-    characterId, 'cash'
-)
-print(balance)
--- Exemplo de retorno: 125
-
-local added = Str.functions.addCharacterMoney(
-    characterId, 25, 'cash'
-)
-print(added)
--- Exemplo de retorno: true</code></pre>
+                    <article class="example-card reveal spot" style="--i:0">
+                        <div class="card-topline"><span class="pill pill-server">SERVER</span><span data-i18n="ex.c1.title"></span></div>
+                        <pre><code data-i18n="ex.c1.code"></code></pre>
                     </article>
-                    <article class="example-card">
-                        <div class="card-topline"><span class="pill pill-server">SERVER</span><span>Inventário</span></div>
-                        <pre><code>local item = Str.functions.getItemFromCharacterInventory(
-                            characterId, 'backpackS'
-)
-print(json.encode(item))
--- Exemplo de retorno:
-                        -- {"name":"backpackS","amount":1}</code></pre>
+                    <article class="example-card reveal spot" style="--i:1">
+                        <div class="card-topline"><span class="pill pill-server">SERVER</span><span data-i18n="ex.c2.title"></span></div>
+                        <pre><code data-i18n="ex.c2.code"></code></pre>
                     </article>
-                    <article class="example-card">
-                        <div class="card-topline"><span class="pill pill-client">CLIENT</span><span>Consultar config no server</span></div>
-                        <pre><code>local items = Str.functions.syncTunnelFunction(
-    'getItemsConfig'
-)
-print(type(items))
--- Exemplo de retorno: "table"
-print(items.backpackS.label)
--- Exemplo de retorno na configuração atual: "Backpack pequena"</code></pre>
+                    <article class="example-card reveal spot" style="--i:2">
+                        <div class="card-topline"><span class="pill pill-client">CLIENT</span><span data-i18n="ex.c3.title"></span></div>
+                        <pre><code data-i18n="ex.c3.code"></code></pre>
                     </article>
-                    <article class="example-card">
-                        <div class="card-topline"><span class="pill pill-server">SERVER</span><span>Verificar grupo</span></div>
-                        <pre><code>local level = Str.functions.hasCharacterGroup(
-                            characterId, 'Staff'
-)
-print(level)
-                        -- Exemplo de retorno: 3 (nível do grupo)
-
-local hierarchy, name =
-    Str.functions.getCharacterGroupHierarchy(
-                                characterId, 'Staff'
-    )
-print(hierarchy, name)
-                        -- Exemplo de retorno: 3, "Admin"</code></pre>
+                    <article class="example-card reveal spot" style="--i:3">
+                        <div class="card-topline"><span class="pill pill-server">SERVER</span><span data-i18n="ex.c4.title"></span></div>
+                        <pre><code data-i18n="ex.c4.code"></code></pre>
                     </article>
                 </div>
             </section>
 
             <section class="section" id="playground-section">
-                <div class="section-heading">
+                <div class="section-heading reveal">
                     <div>
-                        <p class="eyebrow">TESTE NA HORA</p>
-                        <h2>Execute seu exemplo</h2>
-                        <p class="section-intro">Escolha uma função ou um statebag, ajuste os valores e veja o retorno. É uma simulação com dados fictícios: nenhum Lua real é executado.</p>
+                        <p class="eyebrow" data-i18n="pg.eyebrow">TESTE NA HORA</p>
+                        <h2 data-i18n="pg.title">Execute seu exemplo</h2>
+                        <p class="section-intro" data-i18n="pg.intro"></p>
                     </div>
                 </div>
 
-                <div class="playground" id="playground">
-                    <div class="pg-controls">
-                        <div class="segmented" role="tablist" aria-label="Tipo de exemplo">
-                            <button type="button" class="seg active" role="tab" aria-selected="true" data-pg-mode="fn">Função</button>
-                            <button type="button" class="seg" role="tab" aria-selected="false" data-pg-mode="bag">Statebag</button>
+                <div class="playground reveal" id="playground">
+                    <div class="pg-controls spot">
+                        <div class="segmented" role="tablist" data-i18n-attr="aria-label:pg.modeAria" data-active="fn">
+                            <span class="seg-thumb" aria-hidden="true"></span>
+                            <button type="button" class="seg active" role="tab" aria-selected="true" data-pg-mode="fn" data-i18n="pg.modeFn">Função</button>
+                            <button type="button" class="seg" role="tab" aria-selected="false" data-pg-mode="bag" data-i18n="pg.modeBag">Statebag</button>
                         </div>
 
-                        <div id="pg-fn-pane">
+                        <div id="pg-fn-pane" class="pg-pane">
                             <div class="pg-field">
-                                <label class="pg-label" for="pg-fn-select">Função <span id="pg-fn-side" class="pill pill-server">SERVER</span></label>
+                                <label class="pg-label" for="pg-fn-select"><span data-i18n="pg.fnLabel">Função</span> <span id="pg-fn-side" class="pill pill-server">SERVER</span></label>
                                 <select id="pg-fn-select" class="pg-input"></select>
                             </div>
                             <div id="pg-fn-args"></div>
                         </div>
 
-                        <div id="pg-bag-pane" hidden>
+                        <div id="pg-bag-pane" class="pg-pane" hidden>
                             <div class="pg-field">
-                                <label class="pg-label" for="pg-bag-select">Statebag</label>
+                                <label class="pg-label" for="pg-bag-select" data-i18n="pg.bagLabel">Statebag</label>
                                 <select id="pg-bag-select" class="pg-input"></select>
                             </div>
                             <div class="pg-field">
-                                <label class="pg-label" for="pg-bag-action">Ação</label>
+                                <label class="pg-label" for="pg-bag-action" data-i18n="pg.action">Ação</label>
                                 <select id="pg-bag-action" class="pg-input">
-                                    <option value="get">Ler valor</option>
-                                    <option value="set">Definir valor</option>
+                                    <option value="get" data-i18n="pg.get">Ler valor</option>
+                                    <option value="set" data-i18n="pg.set">Definir valor</option>
                                 </select>
                             </div>
                             <div class="pg-field" id="pg-bag-value-wrap" hidden>
-                                <label class="pg-label" for="pg-bag-value">Novo valor</label>
+                                <label class="pg-label" for="pg-bag-value" data-i18n="pg.newValue">Novo valor</label>
                                 <input class="pg-input" id="pg-bag-value" type="text" autocomplete="off">
                             </div>
                         </div>
 
+                        <label class="pg-toggle">
+                            <input type="checkbox" id="pg-keep">
+                            <span class="pg-switch" aria-hidden="true"></span>
+                            <span class="pg-toggle-text">
+                                <span data-i18n="pg.keep">Manter estado entre execuções</span>
+                                <small data-i18n="pg.keepHint"></small>
+                            </span>
+                        </label>
+
                         <div class="pg-actions">
-                            <button type="button" class="button button-primary" id="pg-run">Executar <span aria-hidden="true">▶</span></button>
-                            <button type="button" class="button button-secondary" id="pg-reset">Resetar mundo</button>
+                            <button type="button" class="button button-primary" id="pg-run"><span data-i18n="pg.run">Executar</span> <span class="run-icon" aria-hidden="true">▶</span></button>
+                            <button type="button" class="button button-secondary" id="pg-reset"><span class="reset-icon" aria-hidden="true">↺</span> <span data-i18n="pg.reset">Restaurar mundo</span></button>
                         </div>
                     </div>
 
-                    <div class="pg-terminal">
-                        <div class="pg-term-head"><span>código</span></div>
+                    <div class="pg-terminal spot">
+                        <div class="pg-term-bar" aria-hidden="true"><i></i><i></i><i></i><span>str-playground.lua</span></div>
+                        <div class="pg-term-head"><span data-i18n="pg.code">código</span></div>
                         <pre class="pg-code"><code id="pg-code"></code></pre>
-                        <div class="pg-term-head"><span>saída</span><button type="button" class="pg-clear" id="pg-clear">limpar</button></div>
+                        <div class="pg-term-head"><span data-i18n="pg.output">saída</span><button type="button" class="pg-clear" id="pg-clear" data-i18n="pg.clear">limpar</button></div>
                         <div class="pg-output" id="pg-output" aria-live="polite"></div>
                     </div>
                 </div>
             </section>
 
             <footer class="footer">
-                <span>Str Framework · Documentação comunitária</span>
-                <a href="#inicio">Voltar ao topo ↑</a>
+                <span data-i18n="footer.text">Str Framework · Documentação comunitária</span>
+                <a href="#inicio" data-i18n="footer.top">Voltar ao topo ↑</a>
             </footer>
         </main>
     </div>

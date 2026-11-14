@@ -29,8 +29,7 @@ jobs:
       - name: Prepare site artifact
         run: |
           mkdir site-artifact
-          cp index.html styles.css app.js playground.js site-artifact/
-          cp *.svg site-artifact/
+          cp index.html *.css *.js *.svg site-artifact/
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:

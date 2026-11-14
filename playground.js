@@ -1,27 +1,47 @@
 'use strict';
 
-/* Playground: executa exemplos contra um mundo SIMULADO (nada aqui roda Lua de verdade). */
+/* Playground: executa exemplos contra um mundo SIMULADO (nada aqui roda Lua de verdade).
+   Cada execução limpa a saída e, por padrão, restaura o mundo antes de rodar. */
 (function () {
+    const root = document.getElementById('playground');
+    if (!root) return;
+
+    const t = (key, vars) => window.StrI18n.t(key, vars);
+    const pick = (pair) => window.StrI18n.pick(pair);
+
     const GROUPS = {
         Staff: { 1: 'Helper', 2: 'Mod', 3: 'Admin', 4: 'Dono' },
         Police: { 1: 'Cadete', 2: 'Oficial', 3: 'Comandante' }
     };
 
+    /* label em [pt, en]; resolvido no idioma atual quando a função retorna. */
     const ITEMS = {
-        backpackS: { label: 'Backpack pequena', weight: 0.5, type: 'backpack', capacity: 10 },
-        water: { label: 'Água', weight: 0.3, type: 'consumable' },
-        bread: { label: 'Pão', weight: 0.2, type: 'consumable' },
-        pistol: { label: 'Pistola', weight: 1.5, type: 'weapon', weapon: { isWeapon: true, weaponModel: 'WEAPON_PISTOL' } },
-        phone: { label: 'Celular', weight: 0.4, type: 'tool' }
+        backpackS: { label: ['Backpack pequena', 'Small backpack'], weight: 0.5, type: 'backpack', capacity: 10 },
+        water: { label: ['Água', 'Water'], weight: 0.3, type: 'consumable' },
+        bread: { label: ['Pão', 'Bread'], weight: 0.2, type: 'consumable' },
+        pistol: { label: ['Pistola', 'Pistol'], weight: 1.5, type: 'weapon', weapon: { isWeapon: true, weaponModel: 'WEAPON_PISTOL' } },
+        phone: { label: ['Celular', 'Phone'], weight: 0.4, type: 'tool' }
     };
 
     const VEHICLES = {
-        sultan: { name: 'Sultan', fuel: 65, fuelType: 'gasoline', trunk: 40 },
-        adder: { name: 'Adder', fuel: 80, fuelType: 'gasoline', trunk: 20 },
-        faggio: { name: 'Faggio', fuel: 8, fuelType: 'gasoline', trunk: 5 }
+        sultan: { name: 'Sultan', fuel: 65 },
+        adder: { name: 'Adder', fuel: 80 },
+        faggio: { name: 'Faggio', fuel: 8 }
     };
 
     const INVENTORY_SLOTS = 30;
+
+    function itemConfig(name) {
+        const item = ITEMS[name];
+        if (!item) return null;
+        return { ...item, label: pick(item.label) };
+    }
+
+    function allItems() {
+        const out = {};
+        Object.keys(ITEMS).forEach((k) => { out[k] = itemConfig(k); });
+        return out;
+    }
 
     function freshWorld() {
         return {
@@ -60,29 +80,35 @@
             return /^\d+$/.test(k) ? `[${k}] = ${val}` : `${luaKey(k)} = ${val}`;
         });
         const oneLine = `{ ${parts.join(', ')} }`;
-        if (oneLine.length <= 60 && !oneLine.includes('\n')) return oneLine;
+        if (oneLine.length <= 56 && !oneLine.includes('\n')) return oneLine;
         return `{\n${pad}${parts.join(`,\n${pad}`)}\n${end}}`;
     }
 
     function luaArg(param, raw) {
-        if (raw === '' || raw === undefined) return null;
-        if (param.type === 'number') return Number(raw);
+        if (raw === '' || raw === undefined || raw === null) return null;
+        if (param.type === 'number') {
+            const n = Number(raw);
+            return Number.isNaN(n) ? null : n;
+        }
         if (param.type === 'boolean') return raw === 'true';
         return String(raw);
     }
 
     /* ---------- definições das funções jogáveis ---------- */
-    const charIdParam = { n: 'characterId', type: 'number', def: 42, hint: 'Personagem simulado: 42' };
+    const charIdParam = { n: 'characterId', type: 'number', def: 42, hint: 'pg.hint.char' };
+    const sourceParam = { n: 'source', type: 'number', def: 1, hint: 'pg.hint.source' };
     const moneyTypeParam = { n: 'moneyType', type: 'select', options: ['cash', 'bankMoney', 'coins', 'crypto'], def: 'cash' };
-    const cryptoParam = { n: 'criptoName', type: 'string', optional: true, def: '', hint: 'Só para crypto (ex.: BTC)' };
+    const cryptoParam = { n: 'criptoName', type: 'string', optional: true, def: '', hint: 'pg.hint.crypto' };
     const itemParam = { n: 'item', type: 'select', options: Object.keys(ITEMS), def: 'backpackS' };
     const vehicleParam = { n: 'vehicleModelOrHash', type: 'select', options: Object.keys(VEHICLES), def: 'sultan' };
     const groupParam = { n: 'group', type: 'select', options: Object.keys(GROUPS), def: 'Staff' };
+    const amountParam = { n: 'amount', type: 'number', def: 25 };
+    const qtyParam = { n: 'quantity', type: 'number', def: 1 };
 
     const isMe = (id) => Number(id) === world.characterId;
 
     function readMoney(type, crypto) {
-        if (type === 'crypto') return (world.economy.crypto[crypto] || 0);
+        if (type === 'crypto') return world.economy.crypto[crypto] || 0;
         return world.economy[type] || 0;
     }
 
@@ -102,38 +128,38 @@
     }
 
     const FUNCTIONS = [
-        { group: 'Jogadores e identidade', name: 'getUserId', side: 'server', params: [{ n: 'source', type: 'number', def: 1 }],
-            run: ([s]) => ({ ret: [Number(s) === world.source ? world.userId : null] }) },
-        { group: 'Jogadores e identidade', name: 'getCharacterId', side: 'server', params: [{ n: 'source', type: 'number', def: 1 }],
-            run: ([s]) => ({ ret: [Number(s) === world.source ? world.characterId : null] }) },
-        { group: 'Jogadores e identidade', name: 'getCharacterIdentities', side: 'server', params: [charIdParam],
+        { group: 'players', name: 'getUserId', side: 'server', params: [sourceParam],
+            run: ([s]) => ({ ret: [s === world.source ? world.userId : null] }) },
+        { group: 'players', name: 'getCharacterId', side: 'server', params: [sourceParam],
+            run: ([s]) => ({ ret: [s === world.source ? world.characterId : null] }) },
+        { group: 'players', name: 'getCharacterIdentities', side: 'server', params: [charIdParam],
             run: ([id]) => ({ ret: [isMe(id) ? world.identity : null] }) },
 
-        { group: 'Economia', name: 'getCharacterMoneyAmount', side: 'server', params: [charIdParam, moneyTypeParam, cryptoParam],
-            run: ([id, t, c]) => ({ ret: [isMe(id) ? readMoney(t, c) : 0] }) },
-        { group: 'Economia', name: 'addCharacterMoney', side: 'server', params: [charIdParam, { n: 'amount', type: 'number', def: 25 }, moneyTypeParam, cryptoParam],
-            run: ([id, a, t, c]) => {
+        { group: 'economy', name: 'getCharacterMoneyAmount', side: 'server', params: [charIdParam, moneyTypeParam, cryptoParam],
+            run: ([id, type, c]) => ({ ret: [isMe(id) ? readMoney(type, c) : 0] }) },
+        { group: 'economy', name: 'addCharacterMoney', side: 'server', params: [charIdParam, amountParam, moneyTypeParam, cryptoParam],
+            run: ([id, a, type, c]) => {
                 if (!isMe(id) || typeof a !== 'number') return { ret: [false] };
-                const ok = writeMoney(t, a, c);
-                return { ret: [ok], fx: ok ? [`Player(source).state.${t === 'crypto' ? 'crypto' : t} atualizado → ${toLua(readMoney(t, c))}`] : [] };
+                const ok = writeMoney(type, a, c);
+                return { ret: [ok], fx: ok ? [t('pg.fx.updated', { key: type, value: toLua(readMoney(type, c)) })] : [] };
             } },
-        { group: 'Economia', name: 'removeCharacterMoney', side: 'server', params: [charIdParam, { n: 'amount', type: 'number', def: 25 }, moneyTypeParam, cryptoParam],
-            run: ([id, a, t, c]) => {
+        { group: 'economy', name: 'removeCharacterMoney', side: 'server', params: [charIdParam, amountParam, moneyTypeParam, cryptoParam],
+            run: ([id, a, type, c]) => {
                 if (!isMe(id) || typeof a !== 'number') return { ret: [false] };
-                const ok = writeMoney(t, -a, c);
-                return { ret: [ok], fx: ok ? [`Sem validação de saldo. ${t} agora vale ${toLua(readMoney(t, c))}`] : [] };
+                const ok = writeMoney(type, -a, c);
+                return { ret: [ok], fx: ok ? [t('pg.fx.noCheck', { key: type, value: toLua(readMoney(type, c)) })] : [] };
             } },
-        { group: 'Economia', name: 'getCharacterEconomyData', side: 'server', params: [charIdParam],
+        { group: 'economy', name: 'getCharacterEconomyData', side: 'server', params: [charIdParam],
             run: ([id]) => ({ ret: [isMe(id) ? world.economy : null] }) },
 
-        { group: 'Inventário', name: 'getCharacterInventory', side: 'server', params: [charIdParam],
+        { group: 'inventory', name: 'getCharacterInventory', side: 'server', params: [charIdParam],
             run: ([id]) => ({ ret: [isMe(id) ? world.inventory : {}] }) },
-        { group: 'Inventário', name: 'getItemFromCharacterInventory', side: 'server', params: [charIdParam, itemParam],
+        { group: 'inventory', name: 'getItemFromCharacterInventory', side: 'server', params: [charIdParam, itemParam],
             run: ([id, item]) => {
                 const slot = isMe(id) ? findSlot(item) : undefined;
                 return { ret: [slot ? world.inventory[slot] : null] };
             } },
-        { group: 'Inventário', name: 'addItemToCharacterInventory', side: 'server', params: [charIdParam, itemParam, { n: 'quantity', type: 'number', def: 1 }],
+        { group: 'inventory', name: 'addItemToCharacterInventory', side: 'server', params: [charIdParam, itemParam, qtyParam],
             run: ([id, item, q]) => {
                 if (!isMe(id) || !ITEMS[item] || !(q > 0)) return { ret: [null] };
                 const slot = findSlot(item);
@@ -147,7 +173,7 @@
                 }
                 return { ret: [true] };
             } },
-        { group: 'Inventário', name: 'removeItemFromCharacterInventory', side: 'server', params: [charIdParam, itemParam, { n: 'quantity', type: 'number', def: 1 }],
+        { group: 'inventory', name: 'removeItemFromCharacterInventory', side: 'server', params: [charIdParam, itemParam, qtyParam],
             run: ([id, item, q]) => {
                 const slot = isMe(id) ? findSlot(item) : undefined;
                 if (!slot || !(q > 0) || world.inventory[slot].amount < q) return { ret: [null] };
@@ -155,46 +181,46 @@
                 if (world.inventory[slot].amount === 0) delete world.inventory[slot];
                 return { ret: [true] };
             } },
-        { group: 'Inventário', name: 'getCharacterInventorySlots', side: 'server', params: [charIdParam],
+        { group: 'inventory', name: 'getCharacterInventorySlots', side: 'server', params: [charIdParam],
             run: ([id]) => {
                 const used = isMe(id) ? Object.keys(world.inventory).length : 0;
                 return { ret: [{ amount: INVENTORY_SLOTS, inUse: used, available: INVENTORY_SLOTS - used }] };
             } },
 
-        { group: 'Grupos e status', name: 'hasCharacterGroup', side: 'server', params: [charIdParam, groupParam],
+        { group: 'groups', name: 'hasCharacterGroup', side: 'server', params: [charIdParam, groupParam],
             run: ([id, g]) => ({ ret: [isMe(id) && world.groups[g] ? world.groups[g] : false] }) },
-        { group: 'Grupos e status', name: 'getCharacterGroupHierarchy', side: 'server', params: [charIdParam, groupParam],
+        { group: 'groups', name: 'getCharacterGroupHierarchy', side: 'server', params: [charIdParam, groupParam],
             run: ([id, g]) => {
                 const lvl = isMe(id) ? world.groups[g] : undefined;
                 return { ret: lvl ? [lvl, GROUPS[g][lvl]] : [null, null] };
             } },
-        { group: 'Grupos e status', name: 'addCharacterGroup', side: 'server', params: [charIdParam, groupParam, { n: 'hierarchy', type: 'number', optional: true, def: 1 }],
+        { group: 'groups', name: 'addCharacterGroup', side: 'server', params: [charIdParam, { ...groupParam, def: 'Police' }, { n: 'hierarchy', type: 'number', optional: true, def: 2 }],
             run: ([id, g, h]) => {
                 if (!isMe(id)) return { ret: [false] };
                 const lvl = h || 1;
                 if (!GROUPS[g][lvl]) return { ret: [false] };
                 world.groups[g] = lvl;
-                return { ret: [true], fx: [`Player(source).state.group_${g} → ${lvl}`] };
+                return { ret: [true], fx: [t('pg.fx.updated', { key: `group_${g}`, value: lvl })] };
             } },
-        { group: 'Grupos e status', name: 'getStatus', side: 'server', params: [charIdParam],
+        { group: 'groups', name: 'getStatus', side: 'server', params: [charIdParam],
             run: ([id]) => ({ ret: [isMe(id) ? world.status : null] }) },
 
-        { group: 'Configuração', name: 'getItemLabel', side: 'server', params: [itemParam],
-            run: ([i]) => ({ ret: [ITEMS[i] ? ITEMS[i].label : null] }) },
-        { group: 'Configuração', name: 'getItemWeight', side: 'server', params: [itemParam],
+        { group: 'config', name: 'getItemLabel', side: 'server', params: [itemParam],
+            run: ([i]) => ({ ret: [ITEMS[i] ? pick(ITEMS[i].label) : null] }) },
+        { group: 'config', name: 'getItemWeight', side: 'server', params: [itemParam],
             run: ([i]) => ({ ret: [ITEMS[i] ? ITEMS[i].weight : null] }) },
-        { group: 'Configuração', name: 'getItemConfig', side: 'server', params: [itemParam],
-            run: ([i]) => ({ ret: [ITEMS[i] || null] }) },
-        { group: 'Configuração', name: 'getVehicleName', side: 'server', params: [vehicleParam],
+        { group: 'config', name: 'getItemConfig', side: 'server', params: [itemParam],
+            run: ([i]) => ({ ret: [itemConfig(i)] }) },
+        { group: 'config', name: 'getVehicleName', side: 'server', params: [vehicleParam],
             run: ([v]) => ({ ret: [VEHICLES[v] ? VEHICLES[v].name : null] }) },
-        { group: 'Configuração', name: 'getVehicleFuelCapacity', side: 'server', params: [vehicleParam],
+        { group: 'config', name: 'getVehicleFuelCapacity', side: 'server', params: [vehicleParam],
             run: ([v]) => ({ ret: [VEHICLES[v] ? VEHICLES[v].fuel : null] }) },
-        { group: 'Configuração', name: 'getCharacterVehicles', side: 'server', params: [charIdParam],
+        { group: 'config', name: 'getCharacterVehicles', side: 'server', params: [charIdParam],
             run: ([id]) => ({ ret: [isMe(id) ? world.vehicles : {}] }) },
 
-        { group: 'Tunnel (client)', name: 'syncTunnelFunction', side: 'client',
-            params: [{ n: 'functionName', type: 'select', options: ['getItemsConfig'], def: 'getItemsConfig', hint: 'Handler registrado no server' }],
-            run: () => ({ ret: [ITEMS] }) }
+        { group: 'tunnel', name: 'syncTunnelFunction', side: 'client',
+            params: [{ n: 'functionName', type: 'select', options: ['getItemsConfig'], def: 'getItemsConfig', hint: 'pg.hint.tunnel' }],
+            run: () => ({ ret: [allItems()] }) }
     ];
 
     /* ---------- statebags jogáveis ---------- */
@@ -207,18 +233,16 @@
         { key: 'hunger', scope: 'Player', get: () => world.status.hunger, set: (v) => { world.status.hunger = v; }, type: 'number' },
         { key: 'thirst', scope: 'Player', get: () => world.status.thirst, set: (v) => { world.status.thirst = v; }, type: 'number' },
         { key: 'stress', scope: 'Player', get: () => world.status.stress, set: (v) => { world.status.stress = v; }, type: 'number' },
-        { key: 'characterId', scope: 'Player', get: () => world.characterId, type: 'number', readonly: true },
-        { key: 'identity', scope: 'Player', get: () => world.identity, type: 'table', readonly: true },
         { key: 'seatbelt', scope: 'Player', get: () => world.seatbelt, set: (v) => { world.seatbelt = v; }, type: 'boolean' },
         { key: 'group_Staff', scope: 'Player', get: () => world.groups.Staff || null, set: (v) => { if (v) world.groups.Staff = v; else delete world.groups.Staff; }, type: 'number' },
-        { key: 'Str:language', scope: 'GlobalState', get: () => 'pt-BR', type: 'string', readonly: true }
+        { key: 'characterId', scope: 'Player', get: () => world.characterId, type: 'number', readonly: true },
+        { key: 'identity', scope: 'Player', get: () => world.identity, type: 'table', readonly: true },
+        { key: 'Str:language', scope: 'GlobalState', get: () => window.StrI18n.lang, type: 'string', readonly: true }
     ];
 
     /* ---------- DOM ---------- */
-    const root = document.getElementById('playground');
-    if (!root) return;
-
     const el = {
+        segmented: root.querySelector('.segmented'),
         modeButtons: Array.from(root.querySelectorAll('[data-pg-mode]')),
         fnPane: root.querySelector('#pg-fn-pane'),
         bagPane: root.querySelector('#pg-bag-pane'),
@@ -228,54 +252,61 @@
         bagSelect: root.querySelector('#pg-bag-select'),
         bagAction: root.querySelector('#pg-bag-action'),
         bagValueWrap: root.querySelector('#pg-bag-value-wrap'),
-        bagValue: root.querySelector('#pg-bag-value'),
         code: root.querySelector('#pg-code'),
         out: root.querySelector('#pg-output'),
         run: root.querySelector('#pg-run'),
         reset: root.querySelector('#pg-reset'),
-        clear: root.querySelector('#pg-clear')
+        clear: root.querySelector('#pg-clear'),
+        keep: root.querySelector('#pg-keep'),
+        terminal: root.querySelector('.pg-terminal')
     };
 
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let mode = 'fn';
+    let running = false;
+    let runToken = 0;
 
     function esc(s) {
         return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
-    function currentFn() {
-        return FUNCTIONS.find((f) => f.name === el.fnSelect.value);
-    }
-
-    function currentBag() {
-        return BAGS.find((b) => b.key === el.bagSelect.value);
-    }
+    const currentFn = () => FUNCTIONS.find((f) => f.name === el.fnSelect.value);
+    const currentBag = () => BAGS.find((b) => b.key === el.bagSelect.value);
+    const bagValueInput = () => root.querySelector('#pg-bag-value');
 
     function renderFnSelect() {
+        const selected = el.fnSelect.value || 'addCharacterMoney';
         const groups = [...new Set(FUNCTIONS.map((f) => f.group))];
-        el.fnSelect.innerHTML = groups.map((g) => `<optgroup label="${esc(g)}">${
+        el.fnSelect.innerHTML = groups.map((g) => `<optgroup label="${esc(t(`pg.group.${g}`))}">${
             FUNCTIONS.filter((f) => f.group === g).map((f) => `<option value="${f.name}">${f.name}</option>`).join('')
         }</optgroup>`).join('');
-        el.fnSelect.value = 'addCharacterMoney';
+        el.fnSelect.value = selected;
     }
 
     function renderBagSelect() {
-        el.bagSelect.innerHTML = BAGS.map((b) => `<option value="${esc(b.key)}">${esc(b.key)}</option>`).join('');
-        el.bagSelect.value = 'cash';
+        const selected = el.bagSelect.value || 'cash';
+        el.bagSelect.innerHTML = BAGS.map((b) => `<option value="${esc(b.key)}">${esc(b.key)}${b.readonly ? ` · ${esc(t('pg.readonly'))}` : ''}</option>`).join('');
+        el.bagSelect.value = selected;
     }
 
-    function renderFnArgs() {
+    function renderFnArgs(keepValues) {
         const fn = currentFn();
+        const previous = keepValues ? fn.params.map((p, i) => {
+            const input = root.querySelector(`#pg-arg-${i}`);
+            return input ? input.value : undefined;
+        }) : [];
         el.fnSide.textContent = fn.side.toUpperCase();
         el.fnSide.className = `pill pill-${fn.side}`;
         el.fnArgs.innerHTML = fn.params.map((p, i) => {
-            const label = `<label class="pg-label" for="pg-arg-${i}">${esc(p.n)}${p.optional ? '<em>opcional</em>' : ''}</label>`;
+            const value = previous[i] !== undefined ? previous[i] : (p.def ?? '');
+            const label = `<label class="pg-label" for="pg-arg-${i}">${esc(p.n)}${p.optional ? `<em>${esc(t('pg.optional'))}</em>` : ''}</label>`;
             let input;
             if (p.type === 'select') {
-                input = `<select class="pg-input" id="pg-arg-${i}">${p.options.map((o) => `<option value="${esc(o)}"${o === p.def ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+                input = `<select class="pg-input" id="pg-arg-${i}">${p.options.map((o) => `<option value="${esc(o)}"${String(o) === String(value) ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
             } else {
-                input = `<input class="pg-input" id="pg-arg-${i}" type="${p.type === 'number' ? 'number' : 'text'}" value="${esc(p.def ?? '')}" placeholder="${p.optional ? 'nil' : ''}" autocomplete="off">`;
+                input = `<input class="pg-input" id="pg-arg-${i}" type="${p.type === 'number' ? 'number' : 'text'}" value="${esc(value)}" placeholder="${p.optional ? 'nil' : ''}" autocomplete="off">`;
             }
-            return `<div class="pg-field">${label}${input}${p.hint ? `<span class="pg-hint">${esc(p.hint)}</span>` : ''}</div>`;
+            return `<div class="pg-field pg-field-in" style="--i:${i}">${label}${input}${p.hint ? `<span class="pg-hint">${esc(t(p.hint))}</span>` : ''}</div>`;
         }).join('');
         updateCode();
     }
@@ -287,108 +318,155 @@
     function callSource(fn, args) {
         const list = args.slice();
         while (list.length && list[list.length - 1] === null) list.pop();
-        const argText = list.map((a) => toLua(a)).join(', ');
-        if (fn.side === 'client') return `local result = Str.functions.${fn.name}(${argText})`;
-        return `local result = Str.functions.${fn.name}(${argText})`;
+        return `local result = Str.functions.${fn.name}(${list.map((a) => toLua(a)).join(', ')})`;
     }
 
-    function bagSource() {
-        const bag = currentBag();
+    function bagPath(bag) {
         const holder = bag.scope === 'GlobalState' ? 'GlobalState' : 'Player(source).state';
-        const path = /^[A-Za-z_][A-Za-z0-9_]*$/.test(bag.key) ? `${holder}.${bag.key}` : `${holder}['${bag.key}']`;
-        if (el.bagAction.value === 'set' && !bag.readonly) {
-            const value = parseBagValue(bag);
-            return `${path} = ${toLua(value)}`;
-        }
-        return `local value = ${path}`;
+        return /^[A-Za-z_][A-Za-z0-9_]*$/.test(bag.key) ? `${holder}.${bag.key}` : `${holder}['${bag.key}']`;
     }
 
     function parseBagValue(bag) {
-        const raw = el.bagValue.value;
+        const input = bagValueInput();
+        const raw = input ? input.value : '';
         if (bag.type === 'number') return raw === '' ? null : Number(raw);
         if (bag.type === 'boolean') return raw === 'true';
         return raw;
     }
 
-    function updateBagControls() {
+    function isSetting() {
         const bag = currentBag();
-        const canSet = !bag.readonly;
+        return el.bagAction.value === 'set' && !bag.readonly;
+    }
+
+    function bagSource() {
+        const bag = currentBag();
+        if (isSetting()) return `${bagPath(bag)} = ${toLua(parseBagValue(bag))}`;
+        return `local value = ${bagPath(bag)}\nprint(value)`;
+    }
+
+    /* Troca o campo de valor conforme o tipo do statebag selecionado. */
+    function updateBagControls(resetValue) {
+        const bag = currentBag();
         const setOpt = el.bagAction.querySelector('option[value="set"]');
-        setOpt.disabled = !canSet;
-        if (!canSet) el.bagAction.value = 'get';
-        const setting = el.bagAction.value === 'set';
-        el.bagValueWrap.hidden = !setting;
-        if (setting) {
-            if (bag.type === 'boolean') {
-                if (el.bagValue.tagName !== 'SELECT') {
-                    el.bagValue.outerHTML = '<select class="pg-input" id="pg-bag-value"><option value="true">true</option><option value="false">false</option></select>';
-                }
-            } else if (el.bagValue.tagName !== 'INPUT' || el.bagValue.type !== (bag.type === 'number' ? 'number' : 'text')) {
-                el.bagValue.outerHTML = `<input class="pg-input" id="pg-bag-value" type="${bag.type === 'number' ? 'number' : 'text'}" autocomplete="off">`;
-            }
-            el.bagValue = root.querySelector('#pg-bag-value');
-            el.bagValue.addEventListener('input', updateCode);
-            if (el.bagValue.value === '' && bag.get) el.bagValue.value = typeof bag.get() === 'object' ? '' : String(bag.get());
+        setOpt.disabled = !!bag.readonly;
+        if (bag.readonly) el.bagAction.value = 'get';
+        el.bagValueWrap.hidden = !isSetting();
+
+        const wantSelect = bag.type === 'boolean';
+        let input = bagValueInput();
+        const isSelect = input.tagName === 'SELECT';
+        const wantedType = bag.type === 'number' ? 'number' : 'text';
+        if (wantSelect !== isSelect || (!wantSelect && input.type !== wantedType)) {
+            input.outerHTML = wantSelect
+                ? '<select class="pg-input" id="pg-bag-value"><option value="true">true</option><option value="false">false</option></select>'
+                : `<input class="pg-input" id="pg-bag-value" type="${wantedType}" autocomplete="off">`;
+            input = bagValueInput();
+            input.addEventListener('input', updateCode);
+            input.addEventListener('change', updateCode);
+            resetValue = true;
+        }
+        if (resetValue) {
+            const current = bag.get();
+            if (wantSelect) input.value = current ? 'false' : 'true';
+            else input.value = typeof current === 'object' && current !== null ? '' : String(current ?? '');
         }
         updateCode();
     }
 
     function updateCode() {
-        let src;
         if (mode === 'fn') {
             const fn = currentFn();
-            src = callSource(fn, readArgs(fn));
+            el.code.textContent = `${callSource(fn, readArgs(fn))}\nprint(result)`;
         } else {
-            src = bagSource();
+            el.code.textContent = bagSource();
         }
-        const extra = mode === 'fn' ? '\nprint(result)' : (el.bagAction.value === 'get' ? '\nprint(value)' : '');
-        el.code.textContent = src + extra;
     }
 
-    function log(kind, html) {
-        const line = document.createElement('div');
-        line.className = `pg-line pg-${kind}`;
-        line.innerHTML = html;
-        el.out.appendChild(line);
-        el.out.scrollTop = el.out.scrollHeight;
+    /* ---------- saída ---------- */
+    function line(kind, icon, html) {
+        const node = document.createElement('div');
+        node.className = `pg-line pg-${kind}`;
+        node.innerHTML = `<span class="pg-arrow">${icon}</span><span class="pg-body">${html}</span>`;
+        el.out.appendChild(node);
+        return node;
     }
 
-    function runFn() {
-        const fn = currentFn();
-        const args = readArgs(fn);
-        log('cmd', `<span class="pg-prompt">&gt;</span> ${esc(callSource(fn, args))}`);
-        const res = fn.run(args);
-        const text = res.ret.map((v) => toLua(v)).join(', ');
-        log('ret', `<span class="pg-arrow">⇒</span> <pre>${esc(text)}</pre>`);
-        (res.fx || []).forEach((f) => log('fx', `<span class="pg-arrow">↳</span> ${esc(f)}`));
+    const wait = (ms) => new Promise((r) => window.setTimeout(r, reduceMotion ? 0 : ms));
+
+    async function typeInto(node, text, token) {
+        if (reduceMotion || text.length > 600) { node.textContent = text; return; }
+        const step = Math.max(1, Math.ceil(text.length / 40));
+        for (let i = 0; i <= text.length; i += step) {
+            if (token !== runToken) return;
+            node.textContent = text.slice(0, i);
+            await wait(14);
+        }
+        node.textContent = text;
     }
 
-    function runBag() {
-        const bag = currentBag();
-        const src = bagSource().split('\n')[0];
-        log('cmd', `<span class="pg-prompt">&gt;</span> ${esc(src)}`);
-        if (el.bagAction.value === 'set' && !bag.readonly) {
-            const value = parseBagValue(bag);
-            if (bag.type === 'number' && (value === null || Number.isNaN(value))) {
-                log('err', '<span class="pg-arrow">✕</span> informe um número válido');
-                return;
+    async function present(cmd, result, token) {
+        line('cmd', '&gt;', esc(cmd));
+        const meta = line('meta', '●', esc(el.keep.checked ? t('pg.keptRun') : t('pg.freshRun')));
+        meta.classList.add('pg-dim');
+        const spinner = line('run', '<span class="pg-spinner"></span>', esc(t('pg.running')));
+        await wait(320);
+        if (token !== runToken) return;
+        spinner.remove();
+        const ret = line(result.error ? 'err' : 'ret', result.error ? '✕' : '⇒', '<pre></pre>');
+        await typeInto(ret.querySelector('pre'), result.text, token);
+        for (const fx of result.fx || []) {
+            if (token !== runToken) return;
+            await wait(90);
+            line('fx', '↳', esc(fx));
+        }
+    }
+
+    async function run() {
+        const token = ++runToken;
+        running = true;
+        el.run.classList.add('is-running');
+        el.terminal.classList.remove('flash');
+        void el.terminal.offsetWidth;
+        el.terminal.classList.add('flash');
+
+        el.out.innerHTML = '';
+        if (!el.keep.checked) world = freshWorld();
+
+        let cmd;
+        let result;
+        if (mode === 'fn') {
+            const fn = currentFn();
+            const args = readArgs(fn);
+            cmd = callSource(fn, args);
+            const res = fn.run(args);
+            result = { text: res.ret.map((v) => toLua(v)).join(', '), fx: res.fx };
+        } else {
+            const bag = currentBag();
+            cmd = bagSource().split('\n')[0];
+            if (isSetting()) {
+                const value = parseBagValue(bag);
+                if (bag.type === 'number' && (value === null || Number.isNaN(value))) {
+                    result = { error: true, text: t('pg.err.number') };
+                } else {
+                    bag.set(value);
+                    result = { text: `${bag.key} = ${toLua(bag.get())}`, fx: [t('pg.fx.saved')] };
+                }
+            } else {
+                result = { text: toLua(bag.get()) };
             }
-            bag.set(value);
-            log('ret', `<span class="pg-arrow">⇒</span> <pre>${esc(`${bag.key} = ${toLua(bag.get())}`)}</pre>`);
-            log('fx', '<span class="pg-arrow">↳</span> valor gravado; outras chamadas simuladas já enxergam a mudança');
-        } else {
-            log('ret', `<span class="pg-arrow">⇒</span> <pre>${esc(toLua(bag.get()))}</pre>`);
         }
-    }
 
-    function run() {
-        if (mode === 'fn') runFn(); else runBag();
-        updateBagControls();
-        if (mode === 'fn') updateCode();
+        await present(cmd, result, token);
+        if (token === runToken) {
+            running = false;
+            el.run.classList.remove('is-running');
+        }
     }
 
     function setMode(next) {
         mode = next;
+        el.segmented.dataset.active = mode;
         el.modeButtons.forEach((b) => {
             const on = b.dataset.pgMode === mode;
             b.classList.toggle('active', on);
@@ -396,27 +474,53 @@
         });
         el.fnPane.hidden = mode !== 'fn';
         el.bagPane.hidden = mode !== 'bag';
-        if (mode === 'bag') updateBagControls(); else updateCode();
+        const pane = mode === 'fn' ? el.fnPane : el.bagPane;
+        pane.classList.remove('pane-in');
+        void pane.offsetWidth;
+        pane.classList.add('pane-in');
+        if (mode === 'bag') updateBagControls(true); else updateCode();
+    }
+
+    function ready() {
+        el.out.innerHTML = '';
+        line('fx', 'i', esc(t('pg.ready')));
     }
 
     el.modeButtons.forEach((b) => b.addEventListener('click', () => setMode(b.dataset.pgMode)));
-    el.fnSelect.addEventListener('change', renderFnArgs);
+    el.fnSelect.addEventListener('change', () => renderFnArgs(false));
     el.fnArgs.addEventListener('input', updateCode);
     el.fnArgs.addEventListener('change', updateCode);
-    el.bagSelect.addEventListener('change', () => { el.bagValue.value = ''; updateBagControls(); });
-    el.bagAction.addEventListener('change', updateBagControls);
-    el.bagValue.addEventListener('input', updateCode);
+    el.bagSelect.addEventListener('change', () => updateBagControls(true));
+    el.bagAction.addEventListener('change', () => updateBagControls(false));
+    bagValueInput().addEventListener('input', updateCode);
     el.run.addEventListener('click', run);
-    el.clear.addEventListener('click', () => { el.out.innerHTML = ''; });
+    el.clear.addEventListener('click', () => { runToken += 1; el.out.innerHTML = ''; el.run.classList.remove('is-running'); });
     el.reset.addEventListener('click', () => {
+        runToken += 1;
         world = freshWorld();
-        log('fx', '<span class="pg-arrow">↺</span> mundo simulado restaurado');
-        updateBagControls();
+        el.out.innerHTML = '';
+        line('fx', '↺', esc(t('pg.restored')));
+        el.reset.classList.remove('spin');
+        void el.reset.offsetWidth;
+        el.reset.classList.add('spin');
+        if (mode === 'bag') updateBagControls(true);
+    });
+    el.run.addEventListener('keydown', (e) => { if (e.key === 'Enter' && running) e.preventDefault(); });
+    root.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); run(); }
+    });
+
+    window.StrI18n.onChange(() => {
+        renderFnSelect();
+        renderBagSelect();
+        renderFnArgs(true);
+        if (mode === 'bag') updateBagControls(false);
+        if (!running) ready();
     });
 
     renderFnSelect();
     renderBagSelect();
-    renderFnArgs();
+    renderFnArgs(false);
     setMode('fn');
-    log('fx', '<span class="pg-arrow">i</span> Pronto. Escolha uma função ou statebag e clique em Executar.');
+    ready();
 })();
