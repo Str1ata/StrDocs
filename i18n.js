@@ -23,8 +23,8 @@
         'hero.cta2': ['Ver statebags', 'View statebags'],
 
         'notice': [
-            'As funções de dados, economia, inventário e identidade são <strong>server-side</strong>. No client, use os helpers de tunnel para chamar funções registradas no server. As funções listadas refletem as definições encontradas em <code>Str.lua</code> e <code>client.lua</code>; módulos podem adicionar statebags próprios.',
-            'Data, economy, inventory and identity functions are <strong>server-side</strong>. On the client, use the tunnel helpers to call functions registered on the server. The functions listed reflect the definitions found in <code>Str.lua</code> and <code>client.lua</code>; modules may add their own statebags.'
+            'Quase todas as funções são <strong>server-side</strong> e leem o cache dos jogadores online. No client só existem os helpers de tunnel. O catálogo foi conferido com <code>Str.lua</code>, <code>client.lua</code> e os módulos em <code>scripts/Str_*</code>, incluindo os comportamentos estranhos que vale conhecer antes de usar.',
+            'Almost every function is <strong>server-side</strong> and reads the online players cache. The client only has the tunnel helpers. The catalog was checked against <code>Str.lua</code>, <code>client.lua</code> and the modules in <code>scripts/Str_*</code>, including the odd behaviors worth knowing before you use them.'
         ],
 
         'api.eyebrow': ['REFERÊNCIA DA API', 'API REFERENCE'],
@@ -89,9 +89,32 @@
         'pg.eyebrow': ['TESTE NA HORA', 'TRY IT LIVE'],
         'pg.title': ['Execute seu exemplo', 'Run your example'],
         'pg.intro': [
-            'Escolha uma função ou um statebag, ajuste os valores e veja o retorno. É uma simulação com dados fictícios: nenhum Lua real é executado.',
-            'Pick a function or a statebag, tweak the values and see the return. It is a simulation with sample data: no real Lua is executed.'
+            'Teste qualquer Str.functions ou statebag. O simulador reproduz a lógica de Str.lua sobre um servidor de mentira com dois jogadores online (source 1 = personagem 42, source 2 = personagem 51) e os itens, veículos e grupos das configs reais. Nenhum Lua é executado de verdade.',
+            'Try any Str.functions or statebag. The simulator reproduces the Str.lua logic on a fake server with two online players (source 1 = character 42, source 2 = character 51) and the items, vehicles and groups from the real configs. No real Lua is executed.'
         ],
+        'pg.luaHint': ['Escreva os argumentos em Lua: 42, \'texto\', true, nil, { chave = 1 }. Deixe vazio para nil.', "Write the arguments in Lua: 42, 'text', true, nil, { key = 1 }. Leave empty for nil."],
+        'pg.noArgs': ['Esta função não recebe argumentos.', 'This function takes no arguments.'],
+        'pg.noReturn': ['A função não retorna nada; print(result) mostraria nil.', 'The function returns nothing; print(result) would show nil.'],
+        'pg.holder': ['Dono do statebag', 'Statebag owner'],
+        'pg.key': ['Chave', 'Key'],
+        'pg.bagValueHint': ['Valor em Lua. Vazio = nil (apaga a chave).', 'Lua value. Empty = nil (removes the key).'],
+        'pg.bagSetNote': ['Gravar no statebag não altera o cache do núcleo (playersData); as Str.functions continuam lendo o cache.', 'Writing the statebag does not change the core cache (playersData); Str.functions keep reading the cache.'],
+        'pg.bagMissing': ['Chave inexistente nesse statebag.', 'Key not present in this statebag.'],
+        'pg.parse.string': ['string sem fechar', 'unterminated string'],
+        'pg.parse.table': ['tabela mal formada', 'malformed table'],
+        'pg.parse.end': ['valor faltando', 'missing value'],
+        'pg.parse.single': ['informe um valor só', 'give a single value'],
+        'pg.parse.unexpected': ['valor inesperado perto de "{near}"', 'unexpected value near "{near}"'],
+        'pg.parse.function': ["use o formato function() return valor end", 'use the form function() return value end'],
+        'pg.parse.inParam': ['Argumento {param}: {msg}', 'Argument {param}: {msg}'],
+        'pg.err.slotType': ['o simulador só aceita slot numérico', 'the simulator only accepts a numeric slot'],
+        'pg.fx.notReplicated': ['não replicado', 'not replicated'],
+        'pg.fx.registered': ['Handler "{name}" registrado no tunnel ({side}). Ligue "Manter estado" para chamá-lo depois.', 'Handler "{name}" registered on the tunnel ({side}). Turn on "Keep state" to call it later.'],
+        'pg.fx.noHandler': ['Nenhum handler "{name}" do outro lado: a chamada sync ficaria esperando e devolveria nil após 10 min.', 'No "{name}" handler on the other side: the sync call would keep waiting and return nil after 10 min.'],
+        'pg.fx.notSimulated': ['O handler "{name}" existe no servidor real, mas o simulador não reproduz o retorno dele.', 'The "{name}" handler exists on the real server, but the simulator does not reproduce its return.'],
+        'pg.fx.drop': ['DropPlayer({source}, "{reason}"): o jogador seria expulso.', 'DropPlayer({source}, "{reason}"): the player would be dropped.'],
+        'pg.fx.stub': ['Personagem offline: o núcleo cria playersData["{key}"] = {} para gravar.', 'Offline character: the core creates playersData["{key}"] = {} to write into.'],
+        'pg.fx.groupsSave': ['UPDATE `groups` SET members = … (para cada grupo do personagem {id})', 'UPDATE `groups` SET members = … (for each group of character {id})'],
         'pg.modeAria': ['Tipo de exemplo', 'Example type'],
         'pg.modeFn': ['Função', 'Function'],
         'pg.modeBag': ['Statebag', 'Statebag'],

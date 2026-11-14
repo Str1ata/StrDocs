@@ -315,16 +315,26 @@ html.fx .reveal.in {
     transform: none;
 }
 
-html.fx .api-category tbody tr {
+html.fx .api-category.reveal tbody tr {
     opacity: 0;
     transform: translateX(-10px);
     transition: opacity .5s ease, transform .5s cubic-bezier(.16, 1, .3, 1);
     transition-delay: calc(var(--i, 0) * 28ms + 120ms);
 }
 
-html.fx .api-category.in tbody tr {
+html.fx .api-category.reveal.in tbody tr {
     opacity: 1;
     transform: none;
+}
+
+/* Resultados de busca/aba/idioma: aparecem na hora, com um fade curto. */
+.quick-in {
+    animation: quick-in .28s ease both;
+}
+
+@keyframes quick-in {
+    from { opacity: .35; }
+    to { opacity: 1; }
 }
 
 /* ---------- Brilho que segue o mouse ---------- */
@@ -673,4 +683,134 @@ svg.lang-flag {
     svg.lang-flag {
         display: inline-block;
     }
+}
+
+/* ---------- Glow do botão: folga lateral para o overflow do hero ---------- */
+.hero {
+    border-bottom: 0;
+    margin-left: -36px;
+    padding-left: 36px;
+}
+
+.hero::after {
+    background: rgba(255, 255, 255, .07);
+    bottom: 0;
+    content: "";
+    height: 1px;
+    left: 36px;
+    position: absolute;
+    right: 0;
+}
+
+@media (max-width: 980px) {
+    .hero {
+        margin-left: -24px;
+        padding-left: 24px;
+    }
+
+    .hero::after {
+        left: 24px;
+    }
+}
+
+@media (max-width: 720px) {
+    .hero {
+        margin-left: -16px;
+        padding-left: 16px;
+    }
+
+    .hero::after {
+        left: 16px;
+    }
+}
+
+/* ---------- Playground: argumentos em Lua ---------- */
+.pg-lua {
+    font-family: var(--mono);
+}
+
+textarea.pg-input {
+    line-height: 1.5;
+    min-height: 40px;
+    resize: vertical;
+}
+
+.pg-type {
+    color: #818cf8;
+    font-size: 9px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.pg-doc {
+    color: #94a3b8;
+    font-size: 11px;
+    line-height: 1.55;
+    margin: 8px 0 0;
+}
+
+.pg-lua-hint {
+    margin: -2px 0 12px;
+}
+
+.pg-noargs {
+    margin: 0 0 8px;
+}
+
+.pg-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 6px;
+}
+
+.pg-chip {
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 6px;
+    color: #94a3b8;
+    cursor: pointer;
+    font: 10px var(--mono);
+    max-width: 100%;
+    overflow: hidden;
+    padding: 3px 7px;
+    text-overflow: ellipsis;
+    transition: border-color .15s, color .15s, background .15s, transform .15s;
+    white-space: nowrap;
+}
+
+.pg-chip:hover {
+    background: rgba(0, 229, 255, .08);
+    border-color: rgba(0, 229, 255, .45);
+    color: #b8f8ff;
+    transform: translateY(-1px);
+}
+
+.pg-ret pre {
+    white-space: pre-wrap;
+}
+
+.pg-err pre {
+    background: none;
+    border: 0;
+    box-shadow: none;
+    color: #fb7185;
+    margin: 0;
+    padding: 0;
+    white-space: pre-wrap;
+}
+
+.pg-fx-state { color: #67e8f9; }
+.pg-fx-state .pg-arrow { color: #00e5ff; }
+.pg-fx-sql { color: #a5b4fc; }
+.pg-fx-sql .pg-arrow { color: #818cf8; }
+.pg-fx-event { color: #94a3b8; }
+.pg-fx-event .pg-arrow { color: #64748b; }
+.pg-fx-warn { color: #fbbf24; }
+.pg-fx-warn .pg-arrow { color: #f59e0b; }
+.pg-fx-info { color: #818cf8; }
+.pg-fx-info .pg-arrow { color: #818cf8; }
+
+.pg-output {
+    max-height: 420px;
 }

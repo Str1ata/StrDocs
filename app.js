@@ -1,195 +1,195 @@
 'use strict';
 
-/* Catálogo de Str.functions e statebags. Textos descritivos em [pt-BR, en-US]. */
+/* Catálogo de Str.functions e statebags, conferido com C:\STR-Base-1\resources\Str
+   (Str.lua, client.lua e scripts/Str_*). Textos descritivos em [pt-BR, en-US].
+   Formato do retorno: "tipo — descrição". */
 
 const serverSections = [
     {
-        title: ['Tunnels e cache', 'Tunnels and cache'],
+        title: ['Tunnel e cache', 'Tunnel and cache'],
         note: [
-            'Tunnels transportam chamadas entre client e server. Os callbacks são nomes registrados via registerTunnelFunction.',
-            'Tunnels carry calls between client and server. Callbacks are names registered via registerTunnelFunction.'
+            'O tunnel chama handlers do outro lado pelo nome. No server, o handler roda com o global source do jogador que chamou. Handlers no server: getConfig, getGroupsConfig, getVehiclesConfig, getItemsConfig e getLocaleCatalog (núcleo), getInventoryConfig, getTargetConfig e getMobilitiesConfig (módulos). Nenhum handler client é registrado por padrão; chamar um nome sem handler deixa a chamada sync esperando. Str.lua:15-130.',
+            'The tunnel calls handlers on the other side by name. On the server, the handler runs with the global source of the calling player. Server handlers: getConfig, getGroupsConfig, getVehiclesConfig, getItemsConfig and getLocaleCatalog (core), getInventoryConfig, getTargetConfig and getMobilitiesConfig (modules). No client handler is registered by default; calling a name with no handler leaves the sync call waiting. Str.lua:15-130.'
         ],
         functions: [
-            ['syncTunnelFunction', 'source: number, functionName: string, ...args', ['Todos os valores retornados pelo handler client; aguarda a resposta.', 'All values returned by the client handler; waits for the reply.']],
-            ['asyncTunnelFunction', 'source: number, functionName: string, ...args', ['Sem retorno útil; envia a chamada sem aguardar resposta.', 'No useful return; sends the call without waiting for a reply.']],
-            ['getTunnelFunction', 'async: boolean, source: number, functionName: string, ...args', ['Modo sync: valores do callback client; modo async: nil.', 'Sync mode: values from the client callback; async mode: nil.']],
-            ['registerTunnelFunction', 'funcName: string, func: function', ['nil; registra um handler server invocável pelo client.', 'nil; registers a server handler the client can invoke.']],
-            ['updatePlayersData', 'source: number, async?: boolean', ['nil; grava no banco o cache do jogador, se houver dados e personagem ativo.', 'nil; writes the player cache to the database when there is data and an active character.']]
+            ['syncTunnelFunction', 'source: number, functionName: string, ...args', ['...any — todos os valores retornados pelo handler client. Espera a resposta; nil se o jogador não existir.', '...any — every value returned by the client handler. Waits for the reply; nil if the player does not exist.']],
+            ['asyncTunnelFunction', 'source: number, functionName: string, ...args', ['nil — dispara a chamada e não espera resposta.', 'nil — fires the call without waiting for a reply.']],
+            ['getTunnelFunction', 'async: boolean, source: number, functionName: string, ...args', ['...any — base das duas acima. Sync: valores do client (após 5 s passa a checar a cada 500 ms; após 10 min devolve nil). Async: nil.', '...any — base of the two above. Sync: client values (after 5 s it polls every 500 ms; after 10 min it returns nil). Async: nil.']],
+            ['registerTunnelFunction', 'funcName: string, func: function', ['nil — registra um handler server que o client pode chamar.', 'nil — registers a server handler the client can call.']],
+            ['updatePlayersData', 'source: number, async?: boolean', ['nil — grava no banco o cache do personagem ativo: inventories, banks, membros de groups, vehicles, closets, posição e status. Sem personagem, não faz nada.', 'nil — writes the active character cache to the database: inventories, banks, group members, vehicles, closets, position and status. Does nothing without a character.']]
         ]
     },
     {
-        title: ['Veículos de configuração', 'Vehicle configuration'],
+        title: ['Veículos (configuração)', 'Vehicles (configuration)'],
         note: [
-            'vehicleModelOrHash aceita o nome do modelo (string) ou o hash numérico, exceto onde a assinatura indica um único tipo.',
-            'vehicleModelOrHash accepts the model name (string) or the numeric hash, except where the signature names a single type.'
+            'Lê Str.vehicles, que é configuration/vehicles.json[gameName] (fivem ou redm). vehicleModelOrHash aceita o nome do modelo (string) ou o hash (number); os hashes são calculados com GetHashKey só para os modelos configurados. Str.lua:1220-1355.',
+            'Reads Str.vehicles, which is configuration/vehicles.json[gameName] (fivem or redm). vehicleModelOrHash takes the model name (string) or the hash (number); hashes are computed with GetHashKey only for configured models. Str.lua:1220-1355.'
         ],
         functions: [
-            ['getVehicleHash', 'vehicleModel: string', ['number | nil — hash do modelo.', 'number | nil — model hash.']],
-            ['getVehicleModel', 'vehicleHash: number', ['string | nil — nome do modelo.', 'string | nil — model name.']],
-            ['getVehicleConfig', 'vehicleModelOrHash: string | number', ['table | nil — configuração integral em Str.vehicles.', 'table | nil — full configuration in Str.vehicles.']],
+            ['getVehicleHash', 'vehicleModel: string', ['number | nil — hash do modelo configurado.', 'number | nil — hash of the configured model.']],
+            ['getVehicleModel', 'vehicleHash: number', ['string | nil — nome do modelo configurado.', 'string | nil — name of the configured model.']],
+            ['getVehicleConfig', 'vehicleModelOrHash: string | number', ['table | nil — bloco inteiro do veículo em Str.vehicles.', 'table | nil — the whole vehicle block in Str.vehicles.']],
             ['getVehicleName', 'vehicleModelOrHash: string | number', ['string | nil — exhibitionName.', 'string | nil — exhibitionName.']],
-            ['getVehicleTrunkCapacity', 'vehicleModelOrHash: string | number', ['number | nil — peso máximo do porta-malas.', 'number | nil — max trunk weight.']],
-            ['getVehicleGloveBoxCapacity', 'vehicleModelOrHash: string | number', ['number | nil — peso máximo do porta-luvas.', 'number | nil — max glove box weight.']],
-            ['getVehicleEngineSpecs', 'vehicleModelOrHash: string | number', ['table | nil — configuração do motor.', 'table | nil — engine configuration.']],
-            ['getVehicleFuelCapacity', 'vehicleModelOrHash: string | number', ['number | nil — capacidade do tanque.', 'number | nil — fuel tank capacity.']],
-            ['getVehicleFuelType', 'vehicleModelOrHash: string | number', ['string | nil — tipo de combustível.', 'string | nil — fuel type.']],
-            ['getVehicleBuyMoneyPrice', 'vehicleModelOrHash: string | number', ['number | nil — preço de compra em dinheiro.', 'number | nil — purchase price in money.']],
-            ['getVehicleBuyCoinPrice', 'vehicleModelOrHash: string | number', ['number | nil — preço de compra em coins.', 'number | nil — purchase price in coins.']],
-            ['getVehicleRentalMoneyPrice', 'vehicleModelOrHash: string | number', ['number | nil — preço de aluguel em dinheiro.', 'number | nil — rental price in money.']],
-            ['getVehicleRentalCoinPrice', 'vehicleModelOrHash: string | number', ['number | nil — preço de aluguel em coins.', 'number | nil — rental price in coins.']],
-            ['getVehicleRentalTimeDays', 'vehicleModelOrHash: string | number', ['number | nil — duração do aluguel em dias.', 'number | nil — rental duration in days.']],
-            ['getVehicleCategory', 'vehicleModelOrHash: string | number', ['string | nil — categoria configurada.', 'string | nil — configured category.']],
-            ['getVehicleType', 'vehicleModelOrHash: string | number', ['string | nil — tipo configurado.', 'string | nil — configured type.']],
-            ['getVehicleClass', 'vehicleModelOrHash: string | number', ['string | nil — classe configurada.', 'string | nil — configured class.']]
+            ['getVehicleTrunkCapacity', 'vehicleModelOrHash: string | number', ['number | nil — weight.trunk. Gera erro se o veículo existir sem o bloco weight.', 'number | nil — weight.trunk. Errors if the vehicle exists without a weight block.']],
+            ['getVehicleGloveBoxCapacity', 'vehicleModelOrHash: string | number', ['number | nil — weight.gloveBox. Mesmo cuidado com o bloco weight.', 'number | nil — weight.gloveBox. Same caveat about the weight block.']],
+            ['getVehicleEngineSpecs', 'vehicleModelOrHash: string | number', ['table | nil — {engineLabel, engineType, horsePower}.', 'table | nil — {engineLabel, engineType, horsePower}.']],
+            ['getVehicleFuelCapacity', 'vehicleModelOrHash: string | number', ['number | nil — fuel.fuelCapacity.', 'number | nil — fuel.fuelCapacity.']],
+            ['getVehicleFuelType', 'vehicleModelOrHash: string | number', ['string | nil — fuel.fuelType.', 'string | nil — fuel.fuelType.']],
+            ['getVehicleBuyMoneyPrice', 'vehicleModelOrHash: string | number', ['number | nil — prices.price.buy.', 'number | nil — prices.price.buy.']],
+            ['getVehicleBuyCoinPrice', 'vehicleModelOrHash: string | number', ['number | nil — prices.coin.buy.', 'number | nil — prices.coin.buy.']],
+            ['getVehicleRentalMoneyPrice', 'vehicleModelOrHash: string | number', ['number | nil — prices.price.rent.', 'number | nil — prices.price.rent.']],
+            ['getVehicleRentalCoinPrice', 'vehicleModelOrHash: string | number', ['number | nil — prices.coin.rent.', 'number | nil — prices.coin.rent.']],
+            ['getVehicleRentalTimeDays', 'vehicleModelOrHash: string | number', ['number | nil — rentalTimeDays.', 'number | nil — rentalTimeDays.']],
+            ['getVehicleCategory', 'vehicleModelOrHash: string | number', ['string | nil — vehicleCategory.', 'string | nil — vehicleCategory.']],
+            ['getVehicleType', 'vehicleModelOrHash: string | number', ['string | nil — vehicleType.', 'string | nil — vehicleType.']],
+            ['getVehicleClass', 'vehicleModelOrHash: string | number', ['string | nil — vehicleClass.', 'string | nil — vehicleClass.']]
         ]
     },
     {
-        title: ['Itens de configuração', 'Item configuration'],
+        title: ['Itens (configuração)', 'Items (configuration)'],
         note: [
-            'item é a chave string de Str.items. Campos opcionais não configurados retornam nil; os predicados retornam boolean.',
-            'item is the string key in Str.items. Optional fields that are not configured return nil; predicates return boolean.'
+            'item é a chave em Str.items (configuration/items.json); se não for string, as funções retornam nil. Ingredientes de fabricate e repair são normalizados para {name, quantity, chanceNeeded}, com chanceNeeded 100 quando ausente. Str.lua:1357-1506.',
+            'item is the key in Str.items (configuration/items.json); if it is not a string, the functions return nil. fabricate and repair ingredients are normalized to {name, quantity, chanceNeeded}, with chanceNeeded 100 when missing. Str.lua:1357-1506.'
         ],
         functions: [
-            ['getItemConfig', 'item: string', ['table | nil — configuração integral do item.', 'table | nil — full item configuration.']],
-            ['getItemLabel', 'item: string', ['string | nil — label configurado.', 'string | nil — configured label.']],
-            ['getItemDescription', 'item: string', ['string | nil — descrição.', 'string | nil — description.']],
-            ['getItemWeight', 'item: string', ['number | nil — peso unitário.', 'number | nil — unit weight.']],
-            ['getItemCapacity', 'item: string', ['number | nil — capacidade configurada.', 'number | nil — configured capacity.']],
-            ['getItemType', 'item: string', ['string | nil — tipo do item.', 'string | nil — item type.']],
-            ['getItemFabrication', 'item: string', ['table | nil — bloco fabricate.', 'table | nil — fabricate block.']],
-            ['isItemFabricationEnabled', 'item: string', ['boolean — true somente quando fabricate.enabled == true.', 'boolean — true only when fabricate.enabled == true.']],
-            ['getItemFabricationItems', 'item: string', ['array | nil — ingredientes normalizados em {name, quantity, chanceNeeded}.', 'array | nil — ingredients normalized to {name, quantity, chanceNeeded}.']],
-            ['getItemRepair', 'item: string', ['table | nil — bloco repair.', 'table | nil — repair block.']],
-            ['getItemRepairItems', 'item: string', ['array | nil — ingredientes normalizados em {name, quantity, chanceNeeded}.', 'array | nil — ingredients normalized to {name, quantity, chanceNeeded}.']],
-            ['getItemRepairGroups', 'item: string', ['table | nil — grupos autorizados para reparo.', 'table | nil — groups allowed to repair.']],
-            ['isItemRepairable', 'item: string', ['boolean — true se houver pelo menos um ingrediente de reparo.', 'boolean — true if there is at least one repair ingredient.']],
-            ['isItemRecyclable', 'item: string', ['boolean — true somente se recyclable == true.', 'boolean — true only if recyclable == true.']],
-            ['getItemDefaultMetadata', 'item: string', ['table | nil — metadata padrão.', 'table | nil — default metadata.']],
-            ['getItemDurability', 'item: string', ['table | nil — bloco durability.', 'table | nil — durability block.']],
-            ['isItemDurabilityEnabled', 'item: string', ['boolean — true somente quando durability.enabled == true.', 'boolean — true only when durability.enabled == true.']],
-            ['getItemDurabilityMinutes', 'item: string', ['number | nil — duração em minutos.', 'number | nil — duration in minutes.']],
-            ['getItemDurabilityLife', 'item: string', ['number | nil — valor de life configurado.', 'number | nil — configured life value.']],
-            ['getItemWeaponConfig', 'item: string', ['table | nil — bloco weapon.', 'table | nil — weapon block.']],
-            ['isItemWeapon', 'item: string', ['boolean — true somente quando weapon.isWeapon == true.', 'boolean — true only when weapon.isWeapon == true.']],
-            ['getItemWeaponModel', 'item: string', ['string | number | nil — weaponModel.', 'string | number | nil — weaponModel.']],
-            ['getItemAmmoItem', 'item: string', ['string | nil — item de munição.', 'string | nil — ammo item.']]
+            ['getItemConfig', 'item: string', ['table | nil — bloco inteiro do item.', 'table | nil — the whole item block.']],
+            ['getItemLabel', 'item: string', ['string | nil — label.', 'string | nil — label.']],
+            ['getItemDescription', 'item: string', ['string | nil — description.', 'string | nil — description.']],
+            ['getItemWeight', 'item: string', ['number | nil — weight (peso unitário).', 'number | nil — weight (per unit).']],
+            ['getItemCapacity', 'item: string', ['number | nil — capacity.', 'number | nil — capacity.']],
+            ['getItemType', 'item: string', ['string | nil — type (use, weapon, bullet, clothing...).', 'string | nil — type (use, weapon, bullet, clothing...).']],
+            ['getItemFabrication', 'item: string', ['table | nil — bloco fabricate {enabled, items}.', 'table | nil — fabricate block {enabled, items}.']],
+            ['isItemFabricationEnabled', 'item: string', ['boolean — true só quando fabricate.enabled == true.', 'boolean — true only when fabricate.enabled == true.']],
+            ['getItemFabricationItems', 'item: string', ['array | nil — ingredientes de fabricate normalizados.', 'array | nil — normalized fabricate ingredients.']],
+            ['getItemRepair', 'item: string', ['table | nil — bloco repair {items, groups}.', 'table | nil — repair block {items, groups}.']],
+            ['getItemRepairItems', 'item: string', ['array | nil — ingredientes de repair normalizados.', 'array | nil — normalized repair ingredients.']],
+            ['getItemRepairGroups', 'item: string', ['table | nil — repair.groups, no formato { [grupo] = nível mínimo }.', 'table | nil — repair.groups, shaped { [group] = minimum level }.']],
+            ['isItemRepairable', 'item: string', ['boolean — true se houver ao menos um ingrediente de repair.', 'boolean — true if there is at least one repair ingredient.']],
+            ['isItemRecyclable', 'item: string', ['boolean — true só quando recyclable == true.', 'boolean — true only when recyclable == true.']],
+            ['getItemDefaultMetadata', 'item: string', ['table | nil — defaultMetadata.', 'table | nil — defaultMetadata.']],
+            ['getItemDurability', 'item: string', ['table | nil — bloco durability {enabled, minutes, life}.', 'table | nil — durability block {enabled, minutes, life}.']],
+            ['isItemDurabilityEnabled', 'item: string', ['boolean — true só quando durability.enabled == true.', 'boolean — true only when durability.enabled == true.']],
+            ['getItemDurabilityMinutes', 'item: string', ['number | nil — durability.minutes (-1 = sem prazo).', 'number | nil — durability.minutes (-1 = no expiry).']],
+            ['getItemDurabilityLife', 'item: string', ['number | nil — durability.life.', 'number | nil — durability.life.']],
+            ['getItemWeaponConfig', 'item: string', ['table | nil — bloco weapon {isWeapon, weaponModel, ammoItem}.', 'table | nil — weapon block {isWeapon, weaponModel, ammoItem}.']],
+            ['isItemWeapon', 'item: string', ['boolean — true só quando weapon.isWeapon == true.', 'boolean — true only when weapon.isWeapon == true.']],
+            ['getItemWeaponModel', 'item: string', ['string | nil — weapon.weaponModel (pode ser "" em itens que não são arma).', 'string | nil — weapon.weaponModel (may be "" on non-weapon items).']],
+            ['getItemAmmoItem', 'item: string', ['string | nil — weapon.ammoItem (pode ser "").', 'string | nil — weapon.ammoItem (may be "").']]
         ]
     },
     {
-        title: ['Jogadores e identidade', 'Players and identity'],
+        title: ['Jogadores e contas', 'Players and accounts'],
         note: [
-            'source é o ID de sessão do jogador; userId identifica a conta e characterId identifica o personagem ativo. getUserIdByIdentifiers recebe um mapa como {license: "valor-sem-prefixo", discord: "valor"}; chaves aceitas: steam, license, license2, discord e fivemId.',
-            'source is the player session ID; userId identifies the account and characterId identifies the active character. getUserIdByIdentifiers takes a map such as {license: "value-without-prefix", discord: "value"}; accepted keys: steam, license, license2, discord and fivemId.'
+            'source é o ID de sessão; userId é a conta (users.user_id); characterId é o personagem ativo. As funções de jogador leem só o cache de quem está online. Identificadores ficam sem prefixo, com as chaves steam, license, license2, clientIp, discord, fivemId e hdwids. Str.lua:1508-1620.',
+            'source is the session ID; userId is the account (users.user_id); characterId is the active character. Player functions only read the cache of online players. Identifiers are stored without prefix, under the keys steam, license, license2, clientIp, discord, fivemId and hdwids. Str.lua:1508-1620.'
         ],
         functions: [
-            ['getPlayers', '—', ['array de {source, userId, characterId, identifiers} para jogadores no cache.', 'array of {source, userId, characterId, identifiers} for players in the cache.']],
-            ['getUserIdByIdentifiers', 'identifiers: table', ['number | nil — user_id encontrado no banco.', 'number | nil — user_id found in the database.']],
-            ['getUserId', 'source: number', ['number | nil — ID da conta conectada.', 'number | nil — ID of the connected account.']],
-            ['getUserSource', 'userId: number', ['number | nil — source online, se existir.', 'number | nil — online source, if any.']],
-            ['activeCharacter', 'source: number, characterId: number | nil', ['boolean — true se o jogador estiver no cache.', 'boolean — true if the player is in the cache.']],
-            ['getCharacterId', 'source: number', ['number | nil — personagem ativo.', 'number | nil — active character.']],
-            ['getUserIdByCharacterId', 'characterId: number', ['number | nil — conta associada, apenas para personagem online.', 'number | nil — linked account, online characters only.']],
-            ['getUserSourceByCharacterId', 'characterId: number', ['number | nil — source online do personagem.', 'number | nil — online source of the character.']],
-            ['getPlayerData', 'userId: number', ['table | nil — cache completo do jogador online.', 'table | nil — full cache of the online player.']],
+            ['getPlayers', '—', ['array — {source, userId, characterId, identifiers} de cada jogador no cache.', 'array — {source, userId, characterId, identifiers} for each player in the cache.']],
+            ['getUserIdByIdentifiers', 'identifiers: table', ['number | nil — user_id da primeira conta no banco com steam, license, license2, discord ou fivemId iguais.', 'number | nil — user_id of the first account in the database matching steam, license, license2, discord or fivemId.']],
+            ['getUserId', 'source: number', ['number | nil — conta conectada nesse source (mesmo sem personagem).', 'number | nil — account connected on that source (even without a character).']],
+            ['getUserSource', 'userId: number', ['number | nil — source da conta, se estiver online.', 'number | nil — source of the account, if online.']],
+            ['activeCharacter', 'source: number, characterId: number | nil', ['boolean — define o personagem ativo no cache e o statebag characterId; false se o jogador não estiver no cache.', 'boolean — sets the active character in the cache and the characterId statebag; false if the player is not in the cache.']],
+            ['getCharacterId', 'source: number', ['number | nil — personagem ativo do source.', 'number | nil — active character of the source.']],
+            ['getUserIdByCharacterId', 'characterId: number', ['number | nil — conta do personagem online. Compara com ==, então passe number.', 'number | nil — account of the online character. Compares with ==, so pass a number.']],
+            ['getUserSourceByCharacterId', 'characterId: number | string', ['number | nil — source do personagem online. Compara com tostring, então aceita number ou string.', 'number | nil — source of the online character. Compares with tostring, so number or string both work.']],
+            ['getPlayerData', 'userId: number', ['table | nil — cache inteiro: {userId, characterId, identity, groups, inventory, economy, vehicles, clothes, position, status}.', 'table | nil — the whole cache: {userId, characterId, identity, groups, inventory, economy, vehicles, clothes, position, status}.']],
             ['getPlayerIdentifiers', 'userId: number', ['table | nil — identificadores da conta online.', 'table | nil — identifiers of the online account.']],
-            ['getPlayerHdwids', 'userId: number', ['array | nil — tokens de hardware da conta online.', 'array | nil — hardware tokens of the online account.']],
-            ['getCharacterIdentities', 'characterId: number', ['table | nil — identidade em cache do personagem online.', 'table | nil — cached identity of the online character.']],
-            ['updateIdentities', 'characterId: number, identity: string, data: any', ['nil; atualiza um campo já existente da identidade em cache.', 'nil; updates an existing field of the cached identity.']],
-            ['getCharacterClothes', 'characterId: number', ['table | nil — seleções de roupas.', 'table | nil — clothing selections.']],
-            ['setCharacterClothes', 'characterId: number, clothes: table', ['boolean — indica se o cache aceitou a atualização.', 'boolean — whether the cache accepted the update.']],
-            ['getCharacterFace', 'characterId: number', ['table | nil — seleções faciais.', 'table | nil — face selections.']],
-            ['setCharacterFace', 'characterId: number, face: table', ['boolean — indica se o cache aceitou a atualização.', 'boolean — whether the cache accepted the update.']],
-            ['getCharacterOutfits', 'characterId: number', ['table | nil — outfits salvos.', 'table | nil — saved outfits.']],
-            ['setCharacterOutfit', 'characterId: number, outfitData: table', ['boolean — insere ou substitui outfit pelo nome.', 'boolean — inserts or replaces an outfit by name.']]
+            ['getPlayerHdwids', 'userId: number', ['array | nil — tokens de hardware (GetPlayerTokens) da conta online.', 'array | nil — hardware tokens (GetPlayerTokens) of the online account.']],
+            ['getWhitelistStatus', 'userId: number', ['boolean — users.whitelist no banco.', 'boolean — users.whitelist in the database.']],
+            ['setWhitelistStatus', 'userId: number, status: boolean', ['nil — grava users.whitelist.', 'nil — writes users.whitelist.']],
+            ['getBanStatus', 'userId: number', ['table | nil — {banned, reason, expiresAt}, lido de users.', 'table | nil — {banned, reason, expiresAt}, read from users.']],
+            ['setBanStatus', 'userId: number, status: boolean, reason?: string, expiresAt?: table', ['nil — ao banir, grava o motivo e expulsa a conta se estiver online. expiresAt é uma tabela de data aceita por os.time. Ao desbanir, limpa motivo e prazo.', 'nil — when banning, stores the reason and drops the account if online. expiresAt is a date table accepted by os.time. When unbanning, clears reason and expiry.']]
         ]
     },
     {
-        title: ['Whitelist, banimento, prisão e multas', 'Whitelist, bans, jail and fines'],
+        title: ['Identidade e aparência', 'Identity and appearance'],
         note: [
-            'Operações de banimento e status da conta consultam ou atualizam o banco. Prisão e multas alteram o cache do personagem online. Atenção: o carregamento inicial cria a chave fine, mas as funções de multas leem fines; confirme/corrija essa divergência no núcleo antes de depender delas.',
-            'Ban and account status operations read or update the database. Jail and fines change the online character cache. Note: the initial load creates the fine key, but the fine functions read fines; confirm/fix this mismatch in the core before relying on them.'
+            'Tudo no cache do personagem online. A aparência fica em clothes = {faceData, clothesData}. Atenção: getCharacterFace lê faceData.selections, mas setCharacterFace substitui faceData inteiro, então passe {selections = ...}. As funções set* devolvem true mesmo com o personagem offline. Str.lua:1741-1762, 2203-2281.',
+            'Everything lives in the online character cache. Appearance is stored in clothes = {faceData, clothesData}. Note: getCharacterFace reads faceData.selections, but setCharacterFace replaces the whole faceData, so pass {selections = ...}. The set* functions return true even when the character is offline. Str.lua:1741-1762, 2203-2281.'
         ],
         functions: [
-            ['getWhitelistStatus', 'userId: number', ['boolean — status de whitelist.', 'boolean — whitelist status.']],
-            ['setWhitelistStatus', 'userId: number, status: boolean', ['nil; persiste o status no banco.', 'nil; persists the status in the database.']],
-            ['getBanStatus', 'userId: number', ['table | nil — {banned, reason, expiresAt}.', 'table | nil — {banned, reason, expiresAt}.']],
-            ['setBanStatus', 'userId: number, status: boolean, reason?: string, expiresAt?: number', ['nil; atualiza banimento e desconecta conta online quando banida.', 'nil; updates the ban and drops the online account when banned.']],
-            ['getCharacterArrestTime', 'characterId: number', ['number — tempo de prisão, ou 0 se não disponível.', 'number — jail time, or 0 if unavailable.']],
-            ['setCharacterArrestTime', 'characterId: number, time: number, reason?: string, image?: string', ['boolean — false se personagem não estiver online.', 'boolean — false if the character is not online.']],
-            ['getCharacterCriminalRecords', 'characterId: number', ['array — registros {time, startAt, reason, image}; vazio se indisponível.', 'array — records {time, startAt, reason, image}; empty if unavailable.']],
-            ['deleteCharacterCriminalRecord', 'characterId: number, recordIndex: number', ['boolean — true se removeu o registro.', 'boolean — true if the record was removed.']],
-            ['getCharacterFinesPrice', 'characterId: number', ['number — total devido, ou 0 se indisponível.', 'number — total owed, or 0 if unavailable.']],
-            ['giveCharacterFine', 'characterId: number, amount: number, reason?: string, image?: string', ['boolean — soma ao total e registra a ação.', 'boolean — adds to the total and logs the action.']],
-            ['removeCharacterFine', 'characterId: number, amount: number, reason?: string, image?: string', ['boolean — subtrai sem deixar total abaixo de zero.', 'boolean — subtracts without letting the total go below zero.']],
-            ['getCharacterFinesHistory', 'characterId: number', ['array — histórico de multas; vazio se indisponível.', 'array — fine history; empty if unavailable.']],
-            ['deleteCharacterFineHistory', 'characterId: number, historyIndex: number', ['boolean — true se removeu a entrada.', 'boolean — true if the entry was removed.']]
+            ['getCharacterIdentities', 'characterId: number', ['table | nil — identidade {name, middleName, lastName, document, documentNumber, photo, age, gender, activePhoneNumber}.', 'table | nil — identity {name, middleName, lastName, document, documentNumber, photo, age, gender, activePhoneNumber}.']],
+            ['updateIdentities', 'characterId: number, identity: string, data: any', ['nil — troca um campo da identidade, só se o campo já existir.', 'nil — replaces one identity field, only if the field already exists.']],
+            ['getCharacterClothes', 'characterId: number', ['table | nil — clothes.clothesData.selections.', 'table | nil — clothes.clothesData.selections.']],
+            ['setCharacterClothes', 'characterId: number, clothes: table', ['boolean — grava clothes.clothesData.selections.', 'boolean — writes clothes.clothesData.selections.']],
+            ['getCharacterFace', 'characterId: number', ['table | nil — clothes.faceData.selections.', 'table | nil — clothes.faceData.selections.']],
+            ['setCharacterFace', 'characterId: number, face: table', ['boolean — substitui clothes.faceData pelo valor passado.', 'boolean — replaces clothes.faceData with the given value.']],
+            ['getCharacterOutfits', 'characterId: number', ['table | nil — clothes.clothesData.outfits.', 'table | nil — clothes.clothesData.outfits.']],
+            ['setCharacterOutfit', 'characterId: number, outfitData: table', ['boolean — troca o outfit com o mesmo name; se não houver, grava em outfits[outfitData.name].', 'boolean — replaces the outfit with the same name; otherwise stores it at outfits[outfitData.name].']]
         ]
     },
     {
         title: ['Posição, status e grupos', 'Position, status and groups'],
         note: [
-            'Grupos usam hierarquias definidas em Str.groups. getUsersByGroup atualmente lista apenas personagens online, mesmo quando onlineOnly não é informado.',
-            'Groups use hierarchies defined in Str.groups. getUsersByGroup currently lists online characters only, even when onlineOnly is not given.'
+            'Hierarquias vêm de Str.groups[grupo].hierarchies (configuration/groups.json), uma lista em que o nível 1 é o cargo mais alto. Ex.: Staff = Owner, Manager, Admin, Moderator, Support. Grupos inexistentes em Str.groups geram erro em addCharacterGroup e getCharacterGroupHierarchy. Str.lua:1675-1865.',
+            'Hierarchies come from Str.groups[group].hierarchies (configuration/groups.json), a list where level 1 is the highest rank. E.g.: Staff = Owner, Manager, Admin, Moderator, Support. Groups missing from Str.groups raise an error in addCharacterGroup and getCharacterGroupHierarchy. Str.lua:1675-1865.'
         ],
         functions: [
-            ['updatePositions', 'characterId: number', ['boolean — atualiza a posição do personagem online.', 'boolean — updates the online character position.']],
-            ['getPosition', 'characterId: number', ['vector3 | vector4 | nil — posição em cache; a posição inicial pode ser vector4.', 'vector3 | vector4 | nil — cached position; the initial position may be a vector4.']],
-            ['updateStatus', 'characterId: number, syncAll?: boolean, health?: number, armor?: number, hunger?: number, thirst?: number, stress?: number', ['boolean — atualiza o status no cache; sincroniza health/armor do ped quando aplicável.', 'boolean — updates the status in the cache; syncs ped health/armor when applicable.']],
-            ['getStatus', 'characterId: number', ['table | nil — {health, armor, hunger, thirst, stress}; atualiza health/armor antes de retornar.', 'table | nil — {health, armor, hunger, thirst, stress}; refreshes health/armor before returning.']],
-            ['addCharacterGroup', 'characterId: number, group: string, hierarchy?: number | string', ['boolean — atualiza grupo em cache e statebag.', 'boolean — updates the group in cache and statebag.']],
-            ['removeCharacterGroup', 'characterId: number, group: string', ['boolean — remove grupo e limpa statebag.', 'boolean — removes the group and clears the statebag.']],
+            ['updatePositions', 'characterId: number', ['boolean — copia GetEntityCoords do ped para o cache.', 'boolean — copies the ped GetEntityCoords into the cache.']],
+            ['getPosition', 'characterId: number', ['vector3 | table | nil — posição em cache (a do login vem do banco; depois de updatePositions é um vector3).', 'vector3 | table | nil — cached position (the login one comes from the database; after updatePositions it is a vector3).']],
+            ['updateStatus', 'characterId: number, syncAll?: boolean, health?: number, armor?: number, hunger?: number, thirst?: number, stress?: number', ['boolean — atualiza o status no cache. Com syncAll (ou health/armor), lê vida e colete do ped e grava nos statebags sem replicar. Valores omitidos vêm dos statebags.', 'boolean — updates the status in the cache. With syncAll (or health/armor), reads ped health and armor and writes them to the statebags without replication. Omitted values come from the statebags.']],
+            ['getStatus', 'characterId: number', ['table | nil — {health, armor, hunger, thirst, stress}. Chama updateStatus(characterId, true) antes.', 'table | nil — {health, armor, hunger, thirst, stress}. Calls updateStatus(characterId, true) first.']],
+            ['addCharacterGroup', 'characterId: number, group: string, hierarchy?: number | string', ['boolean — grava o nível no cache e no statebag group_<grupo>. hierarchy number = nível; string = nome do cargo; omitido = último nível (cargo mais baixo).', 'boolean — stores the level in the cache and in the group_<group> statebag. hierarchy number = level; string = rank name; omitted = last level (lowest rank).']],
+            ['removeCharacterGroup', 'characterId: number, group: string', ['boolean — remove o grupo do cache e limpa o statebag group_<grupo>.', 'boolean — removes the group from the cache and clears the group_<group> statebag.']],
             ['getCharacterGroups', 'characterId: number', ['table | nil — mapa { [grupo] = nível }.', 'table | nil — map { [group] = level }.']],
-            ['getCharacterGroupHierarchy', 'characterId: number, group: string', ['number | nil, string | nil — nível e nome da hierarquia.', 'number | nil, string | nil — hierarchy level and name.']],
-            ['hasCharacterGroup', 'characterId: number, group: string', ['number | false — nível do grupo ou false.', 'number | false — group level or false.']],
-            ['getUsersByGroup', 'group: string, onlineOnly?: boolean', ['array de {source, userId, characterId, hierarchyLevel}; atualmente apenas online.', 'array of {source, userId, characterId, hierarchyLevel}; currently online only.']]
+            ['getCharacterGroupHierarchy', 'characterId: number, group: string', ['number | nil, string | nil — nível e nome do cargo; nil, nil se o personagem não estiver no grupo.', 'number | nil, string | nil — level and rank name; nil, nil if the character is not in the group.']],
+            ['hasCharacterGroup', 'characterId: number, group: string', ['number | nil | false — nível do grupo; nil se online sem o grupo; false se offline ou sem argumentos.', 'number | nil | false — group level; nil if online without the group; false if offline or missing arguments.']],
+            ['getUsersByGroup', 'group: string, onlineOnly?: boolean', ['array — {source, userId, characterId, hierarchyLevel} dos jogadores online no grupo. onlineOnly hoje é ignorado.', 'array — {source, userId, characterId, hierarchyLevel} of online players in the group. onlineOnly is currently ignored.']]
         ]
     },
     {
-        title: ['Inventário', 'Inventory'],
+        title: ['Inventário (cache do núcleo)', 'Inventory (core cache)'],
         note: [
-            'Formato do núcleo: tabela indexada por slot com itens {name, amount, metadata}. quantity deve ser positivo; slot é opcional e metadata precisa corresponder exatamente para localizar/mesclar um item. O inventário canônico do Str_inventory pode ter convenções adicionais.',
-            'Core format: slot-indexed table with items {name, amount, metadata}. quantity must be positive; slot is optional and metadata must match exactly to find/merge an item. The canonical Str_inventory may have extra conventions.'
+            'No cache do núcleo o inventário é uma lista de {name, amount, metadata?}. Itens só se juntam quando a metadata é igual (comparada via json.encode) ou ambos não têm metadata. O Str_inventory usa outro formato canônico, {items = {[slot] = {id, qty, metadata}}}; prefira as funções dele quando o módulo estiver ativo. Str.lua:1867-2057.',
+            'In the core cache the inventory is a list of {name, amount, metadata?}. Items only stack when the metadata is equal (compared via json.encode) or both have none. Str_inventory uses another canonical format, {items = {[slot] = {id, qty, metadata}}}; prefer its functions when the module is active. Str.lua:1867-2057.'
         ],
         functions: [
-            ['getCharacterInventory', 'characterId: number', ['table — inventário em cache; tabela vazia se indisponível.', 'table — cached inventory; empty table if unavailable.']],
-            ['addItemToCharacterInventory', 'characterId: number, item: string, quantity: number, slot?: number, metadata?: table', ['boolean | nil — true ao adicionar; false em conflito de slot; nil para argumentos/jogador inválidos.', 'boolean | nil — true when added; false on slot conflict; nil for invalid arguments/player.']],
-            ['removeItemFromCharacterInventory', 'characterId: number, item: string, quantity: number, slot?: number, metadata?: table', ['boolean | nil — true ao remover; nil se não encontrou item ou dados inválidos.', 'boolean | nil — true when removed; nil if the item was not found or data is invalid.']],
-            ['getItemFromCharacterInventory', 'characterId: number, item: string, slot?: number, metadata?: table', ['table | nil — item {name, amount, metadata}.', 'table | nil — item {name, amount, metadata}.']],
-            ['getCharacterInventorySlots', 'characterId: number', ['table — {amount, inUse, available}.', 'table — {amount, inUse, available}.']],
-            ['getCharacterInventoryWeight', 'characterId: number', ['table — {total, used, available}; total permanece 0 no código atual.', 'table — {total, used, available}; total stays 0 in the current code.']]
+            ['getCharacterInventory', 'characterId: number', ['table — inventário em cache; {} se offline.', 'table — cached inventory; {} if offline.']],
+            ['addItemToCharacterInventory', 'characterId: number, item: string, quantity: number, slot?: number, metadata?: table', ['boolean | nil — true ao adicionar ou somar; false se o slot estiver ocupado por outro item; nil com argumentos inválidos ou offline. Não confere se o item existe em Str.items.', 'boolean | nil — true when added or stacked; false if the slot holds another item; nil with invalid arguments or offline. Does not check that the item exists in Str.items.']],
+            ['removeItemFromCharacterInventory', 'characterId: number, item: string, quantity: number, slot?: number, metadata?: table', ['boolean | nil — true ao remover; nil se não achar. Não confere se há quantidade suficiente: remove a entrada quando chega a 0 ou menos.', 'boolean | nil — true when removed; nil if not found. Does not check there is enough: removes the entry when it reaches 0 or less.']],
+            ['getItemFromCharacterInventory', 'characterId: number, item: string, slot?: number, metadata?: table', ['table | nil — {name, amount, metadata}. Sem metadata, só encontra itens que também não têm metadata.', 'table | nil — {name, amount, metadata}. Without metadata, it only finds items that have no metadata either.']],
+            ['getCharacterInventorySlots', 'characterId: number', ['table — {amount, inUse, available}; amount é o número de entradas (#inventory), não o limite de slots.', 'table — {amount, inUse, available}; amount is the entry count (#inventory), not a slot limit.']],
+            ['getCharacterInventoryWeight', 'characterId: number', ['table — {total, used, available}. Com personagem online hoje gera erro: chama exports["Str"]:getInventoryDefaultWeight(), que não existe em nenhum módulo. Offline devolve {total = 0, used = 0, available = 0}.', 'table — {total, used, available}. With an online character it currently errors: it calls exports["Str"]:getInventoryDefaultWeight(), which no module defines. Offline it returns {total = 0, used = 0, available = 0}.']]
         ]
     },
     {
         title: ['Economia', 'Economy'],
         note: [
-            'moneyType normalmente é cash, bankMoney, coins ou crypto. Para crypto, informe criptoName. removeCharacterMoney não valida saldo e pode resultar em valor negativo.',
-            'moneyType is usually cash, bankMoney, coins or crypto. For crypto, pass criptoName. removeCharacterMoney does not check the balance and can result in a negative value.'
+            'Economia em cache: {cash, bankMoney, coins, crypto = { [moeda] = valor }}. moneyType é cash, bankMoney, coins ou crypto; com crypto, informe criptoName (sem ele, addCharacterMoney gera erro). O dinheiro só vai ao banco em updatePlayersData. Str.lua:2059-2119.',
+            'Cached economy: {cash, bankMoney, coins, crypto = { [coin] = value }}. moneyType is cash, bankMoney, coins or crypto; with crypto, pass criptoName (without it, addCharacterMoney errors). Money only reaches the database in updatePlayersData. Str.lua:2059-2119.'
         ],
         functions: [
             ['getCharacterEconomyData', 'characterId: number', ['table | nil — {cash, bankMoney, coins, crypto}.', 'table | nil — {cash, bankMoney, coins, crypto}.']],
-            ['setCharacterEconomyData', 'characterId: number, economyData: table', ['boolean — atualiza a economia em cache.', 'boolean — updates the cached economy.']],
-            ['addCharacterMoney', 'characterId: number, amount: number, moneyType: string, criptoName?: string', ['boolean — true se argumentos forem aceitos; atualiza também o statebag do jogador online.', 'boolean — true if the arguments are accepted; also updates the online player statebag.']],
-            ['removeCharacterMoney', 'characterId: number, amount: number, moneyType: string, criptoName?: string', ['boolean — equivalente a addCharacterMoney com amount negativo; não valida saldo.', 'boolean — same as addCharacterMoney with a negative amount; does not check the balance.']],
-            ['getCharacterMoneyAmount', 'characterId: number, moneyType: string, criptoName?: string', ['number — saldo do tipo/moeda; 0 se indisponível.', 'number — balance for the type/currency; 0 if unavailable.']]
+            ['setCharacterEconomyData', 'characterId: number, economyData: table', ['boolean — substitui a economia em cache; false se offline.', 'boolean — replaces the cached economy; false if offline.']],
+            ['addCharacterMoney', 'characterId: number, amount: number, moneyType: string, criptoName?: string', ['boolean — soma ao saldo e atualiza o statebag (moneyType, ou crypto). Retorna true sempre que os argumentos existem, mesmo offline (aí nada é salvo).', 'boolean — adds to the balance and updates the statebag (moneyType, or crypto). Returns true whenever the arguments are present, even offline (then nothing is stored).']],
+            ['removeCharacterMoney', 'characterId: number, amount: number, moneyType: string, criptoName?: string', ['boolean — addCharacterMoney com -amount. Não confere saldo e pode deixar negativo.', 'boolean — addCharacterMoney with -amount. Does not check the balance and can go negative.']],
+            ['getCharacterMoneyAmount', 'characterId: number, moneyType: string, criptoName?: string', ['number — saldo do tipo ou da moeda; 0 se não houver.', 'number — balance for the type or coin; 0 if there is none.']]
         ]
     },
     {
         title: ['Veículos do personagem', 'Character vehicles'],
         note: [
-            'vehicleName é a chave do modelo em Str.vehicles. Os dados ficam em cache e são persistidos pelo fluxo de atualização do núcleo.',
-            'vehicleName is the model key in Str.vehicles. Data stays in cache and is persisted by the core update flow.'
+            'Os veículos carregados do banco ficam indexados por vehicle_id, com {model, lastGarage, lastLocation, state, tuning, fuelLevel, taxesDueAt, odometer, damages, rentalExpiresAt, inventory, arrested, dismantled}. addCharacterVehicle, getCharacterVehicle e removeCharacterVehicle usam o nome do modelo como chave, então não encontram os veículos vindos do banco. Str.lua:622-647, 2121-2201.',
+            'Vehicles loaded from the database are keyed by vehicle_id, with {model, lastGarage, lastLocation, state, tuning, fuelLevel, taxesDueAt, odometer, damages, rentalExpiresAt, inventory, arrested, dismantled}. addCharacterVehicle, getCharacterVehicle and removeCharacterVehicle key by model name, so they do not find vehicles loaded from the database. Str.lua:622-647, 2121-2201.'
         ],
         functions: [
-            ['getCharacterVehiclesData', 'characterId: number', ['table — mapa de veículos; vazio se indisponível.', 'table — vehicle map; empty if unavailable.']],
-            ['setCharacterVehicleData', 'characterId: number, vehicleData: table', ['nil; substitui mapa de veículos em cache.', 'nil; replaces the cached vehicle map.']],
-            ['addCharacterVehicle', 'characterId: number, vehicleName: string, data?: table', ['boolean — valida se o modelo existe em Str.vehicles.', 'boolean — checks that the model exists in Str.vehicles.']],
-            ['removeCharacterVehicle', 'characterId: number, vehicleName: string', ['boolean — true se o veículo existia e foi removido.', 'boolean — true if the vehicle existed and was removed.']],
-            ['getCharacterVehicles', 'characterId: number', ['table — mapa de veículos do personagem.', "table — the character's vehicle map."]],
-            ['getCharacterVehicle', 'characterId: number, vehicleName: string', ['table | nil — dados do veículo.', 'table | nil — vehicle data.']],
-            ['getVehicleTunings', 'characterId: number, vehicleName: string', ['table — tunings ou tabela vazia.', 'table — tunings or an empty table.']],
-            ['setVehicleTunings', 'characterId: number, vehicleName: string, tunings: table', ['boolean — true quando o veículo foi atualizado.', 'boolean — true when the vehicle was updated.']],
-            ['getVehicleInventory', 'characterId: number, vehicleName: string', ['table — inventário do veículo ou tabela vazia.', 'table — vehicle inventory or an empty table.']],
-            ['updateVehicleInventory', 'characterId: number, vehicleName: string, inventory: table', ['boolean — true quando o veículo foi atualizado.', 'boolean — true when the vehicle was updated.']]
+            ['getCharacterVehicleData', 'characterId: number', ['table — mapa de veículos em cache; {} se offline.', 'table — cached vehicle map; {} if offline.']],
+            ['setCharacterVehicleData', 'characterId: number, vehicleData: table', ['nil — substitui o mapa de veículos em cache.', 'nil — replaces the cached vehicle map.']],
+            ['addCharacterVehicle', 'characterId: number, vehicleName: string, data?: table', ['boolean — false se o modelo não existir em Str.vehicles. Sem data, usa um registro padrão (fuelLevel 100, damages zerados, tunings {}). Retorna true mesmo offline.', 'boolean — false if the model is not in Str.vehicles. Without data, uses a default record (fuelLevel 100, zeroed damages, tunings {}). Returns true even offline.']],
+            ['removeCharacterVehicle', 'characterId: number, vehicleName: string', ['boolean — true se existia vehicles[vehicleName] e foi removido.', 'boolean — true if vehicles[vehicleName] existed and was removed.']],
+            ['getCharacterVehicles', 'characterId: number', ['table — o mesmo que getCharacterVehicleData.', 'table — same as getCharacterVehicleData.']],
+            ['getCharacterVehicle', 'characterId: number, vehicleName: string', ['table | nil — vehicles[vehicleName].', 'table | nil — vehicles[vehicleName].']]
+        ]
+    },
+    {
+        title: ['Adicionadas por módulos', 'Added by modules'],
+        note: [
+            'Funções que os módulos penduram em Str.functions ao carregar. Como os módulos carregam depois do núcleo, teste se existem antes de chamar. Str_style/server.lua:55-71, Str_inventory/server.lua:1051-1153.',
+            'Functions that modules attach to Str.functions when they load. Since modules load after the core, check that they exist before calling. Str_style/server.lua:55-71, Str_inventory/server.lua:1051-1153.'
+        ],
+        functions: [
+            ['getStyleInventoryClothingItems', 'framework: string', ['table — Str_style: mapa { [categoria] = {itemId, label, icon} } de script_config.inventoryItems[framework] (fivem ou redm).', 'table — Str_style: map { [category] = {itemId, label, icon} } from script_config.inventoryItems[framework] (fivem or redm).']],
+            ['applyStyleClothingPurchase', 'playerSource: number, changes: table', ['boolean, string? — Str_inventory: guarda as roupas compradas no inventário e equipa. Em falha retorna false e a mensagem do motivo.', 'boolean, string? — Str_inventory: stores the purchased clothes in the inventory and equips them. On failure returns false and the reason message.']]
         ]
     }
 ];
@@ -198,51 +198,52 @@ const clientSections = [
     {
         title: ['Tunnel client', 'Client tunnel'],
         note: [
-            'O client usa o nome da função como primeiro argumento; o server remoto envia source antes do nome. Registre o handler no lado que vai executá-lo.',
-            'The client passes the function name as the first argument; the remote server sends source before the name. Register the handler on the side that runs it.'
+            'No client, o primeiro argumento é o nome da função (sem source). Ao iniciar, o client carrega Str.config, Str.groups, Str.vehicles e Str.items com syncTunnelFunction("getConfig" | "getGroupsConfig" | "getVehiclesConfig" | "getItemsConfig"). client.lua:15-90.',
+            'On the client, the first argument is the function name (no source). On start, the client loads Str.config, Str.groups, Str.vehicles and Str.items with syncTunnelFunction("getConfig" | "getGroupsConfig" | "getVehiclesConfig" | "getItemsConfig"). client.lua:15-90.'
         ],
         functions: [
-            ['syncTunnelFunction', 'functionName: string, ...args', ['Todos os valores retornados pelo handler server; síncrono, aguarda resposta.', 'All values returned by the server handler; synchronous, waits for the reply.']],
-            ['asyncTunnelFunction', 'functionName: string, ...args', ['nil; envia a chamada sem aguardar resposta.', 'nil; sends the call without waiting for a reply.']],
-            ['getTunnelFunction', 'async: boolean, functionName: string, ...args', ['Helper de baixo nível; sync retorna valores do server, async não retorna resultado.', 'Low-level helper; sync returns server values, async returns nothing.']],
-            ['registerTunnelFunction', 'funcName: string, func: function', ['nil; registra um handler client invocável pelo server.', 'nil; registers a client handler the server can invoke.']]
+            ['syncTunnelFunction', 'functionName: string, ...args', ['...any — todos os valores retornados pelo handler server; espera a resposta.', '...any — every value returned by the server handler; waits for the reply.']],
+            ['asyncTunnelFunction', 'functionName: string, ...args', ['nil — dispara a chamada e não espera resposta.', 'nil — fires the call without waiting for a reply.']],
+            ['getTunnelFunction', 'async: boolean, functionName: string, ...args', ['...any — base das duas acima; sync devolve os valores do server, async não devolve nada.', '...any — base of the two above; sync returns the server values, async returns nothing.']],
+            ['registerTunnelFunction', 'funcName: string, func: function', ['nil — registra um handler client que o server pode chamar.', 'nil — registers a client handler the server can call.']]
         ]
     }
 ];
 
 /* [chave, origem, descrição, replicação] — os três últimos em [pt, en]. */
 const REPLICATED = ['Replicado', 'Replicated'];
-const SERVER_ONLY = ['Não replicado (uso no server)', 'Not replicated (server use)'];
-const GLOBAL = ['Global', 'Global'];
+const NOT_REPLICATED = ['Não replicado (só server)', 'Not replicated (server only)'];
+const GLOBAL = ['GlobalState', 'GlobalState'];
 
 const statebags = [
-    ['characterId', ['Player state · core', 'Player state · core'], ['ID numérico do personagem ativo. Publicado pelo server ao carregar personagem e ao trocar de personagem.', 'Numeric ID of the active character. Published by the server when a character loads or is switched.'], REPLICATED],
-    ['identity', ['Player state · core', 'Player state · core'], ['Tabela da identidade: name, middleName, lastName, document, documentNumber, photo, age, gender e activePhoneNumber.', 'Identity table: name, middleName, lastName, document, documentNumber, photo, age, gender and activePhoneNumber.'], REPLICATED],
-    ['health', ['Player state · core', 'Player state · core'], ['Vida do ped. É atualizada no client ao receber dano e lida para sincronização do jogador.', 'Ped health. Updated on the client when taking damage and read to sync the player.'], ['Replicado em gravações client e no carregamento; updateStatus também escreve sem solicitar replicação.', 'Replicated on client writes and on load; updateStatus also writes without requesting replication.']],
-    ['armor', ['Player state · core', 'Player state · core'], ['Colete do ped.', 'Ped armor.'], ['Mesmo padrão de health', 'Same pattern as health']],
-    ['hunger', ['Player state · core', 'Player state · core'], ['Fome numérica; a sincronização/decadência depende da configuração hungerSystem.', 'Numeric hunger; sync/decay depends on the hungerSystem config.'], REPLICATED],
-    ['thirst', ['Player state · core', 'Player state · core'], ['Sede numérica; a sincronização/decadência depende da configuração thirstSystem.', 'Numeric thirst; sync/decay depends on the thirstSystem config.'], REPLICATED],
-    ['stress', ['Player state · core', 'Player state · core'], ['Estresse numérico; a sincronização/decadência depende da configuração stressSystem.', 'Numeric stress; sync/decay depends on the stressSystem config.'], REPLICATED],
-    ['cash', ['Player state · economia', 'Player state · economy'], ['Saldo em dinheiro do personagem.', 'Character cash balance.'], REPLICATED],
-    ['bankMoney', ['Player state · economia', 'Player state · economy'], ['Saldo bancário do personagem.', 'Character bank balance.'], REPLICATED],
-    ['coins', ['Player state · economia', 'Player state · economy'], ['Saldo de coins do personagem.', 'Character coin balance.'], REPLICATED],
-    ['cryptos / crypto', ['Player state · economia', 'Player state · economy'], ['Tabela de saldos crypto. No carregamento inicial o núcleo publica cryptos; addCharacterMoney atualiza crypto.', 'Table of crypto balances. On the initial load the core publishes cryptos; addCharacterMoney updates crypto.'], REPLICATED],
-    ['group_<nome>', ['Player state · grupos', 'Player state · groups'], ['Nível numérico da hierarquia do grupo; removido ao sair do grupo.', 'Numeric group hierarchy level; removed when leaving the group.'], REPLICATED],
-    ['Str:phase', ['Player state · Str_creator / Str_style', 'Player state · Str_creator / Str_style'], ['Etapa: menu_picker, menu_creation, switching, spawning, ped_setup ou playing.', 'Stage: menu_picker, menu_creation, switching, spawning, ped_setup or playing.'], SERVER_ONLY],
-    ['Str:pendingCharacter', ['Player state · Str_creator', 'Player state · Str_creator'], ['Durante troca: {characterId, isFirstSpawn, position} com posição [x, y, z, heading]. Removido ao concluir/falhar.', 'During a switch: {characterId, isFirstSpawn, position} with position [x, y, z, heading]. Removed on success/failure.'], SERVER_ONLY],
-    ['Str:charId', ['Player state · Str_creator', 'Player state · Str_creator'], ['ID de personagem durante a troca; limpo enquanto a troca está pendente.', 'Character ID during a switch; cleared while the switch is pending.'], SERVER_ONLY],
-    ['seatbelt', ['Player state · Str_hud', 'Player state · Str_hud'], ['Boolean indicando cinto afivelado; client atualiza ao ativar/desativar.', 'Boolean for a fastened seatbelt; the client updates it on toggle.'], REPLICATED],
-    ['isTargeting', ['Player state · Str_target', 'Player state · Str_target'], ['Boolean indicando se o jogador está mirando um alvo.', 'Boolean for whether the player is aiming at a target.'], REPLICATED],
-    ['targetActive', ['Player state · Str_target', 'Player state · Str_target'], ['Boolean indicando se a interface de interação está ativa.', 'Boolean for whether the interaction UI is active.'], REPLICATED],
-    ['targetEntity', ['Player state · Str_target', 'Player state · Str_target'], ['Entity handle em foco; volta a 0 quando a mira fecha.', 'Focused entity handle; resets to 0 when targeting closes.'], REPLICATED],
-    ['targetZone', ['Player state · Str_target', 'Player state · Str_target'], ['Identificador da zona em foco; nil quando a mira fecha.', 'Focused zone identifier; nil when targeting closes.'], REPLICATED],
-    ['targetOptions', ['Entity state · Str_target', 'Entity state · Str_target'], ['Opções de interação da entidade; formato depende da API de target do módulo.', "Entity interaction options; the shape depends on the module's target API."], REPLICATED],
-    ['strMobilitiesVehicleId', ['Entity state · Str_mobilities', 'Entity state · Str_mobilities'], ['ID numérico persistido do veículo.', 'Persisted numeric vehicle ID.'], REPLICATED],
-    ['strMobilitiesVehicleData', ['Entity state · Str_mobilities', 'Entity state · Str_mobilities'], ['Objeto {id, netId, model, plate, tuning, engineHealth, bodyHealth, revision}.', 'Object {id, netId, model, plate, tuning, engineHealth, bodyHealth, revision}.'], REPLICATED],
-    ['strMobilitiesFuel', ['Entity state · Str_mobilities', 'Entity state · Str_mobilities'], ['Objeto {netId, fuel}; fuel é limitado a 0–100 no client.', 'Object {netId, fuel}; fuel is clamped to 0–100 on the client.'], REPLICATED],
-    ['Str:scripts', ['GlobalState · core', 'GlobalState · core'], ['JSON serializado com as pastas de módulos Str_ disponíveis para a NUI.', 'Serialized JSON with the Str_ module folders available to the NUI.'], GLOBAL],
-    ['Str:language', ['GlobalState · core', 'GlobalState · core'], ['Código do idioma configurado para o resource.', 'Language code configured for the resource.'], GLOBAL],
-    ['strMobilitiesVehicleEntities', ['GlobalState · Str_mobilities', 'GlobalState · Str_mobilities'], ['JSON serializado dos veículos gerenciados, usado para recuperar o estado após reiniciar o resource.', 'Serialized JSON of the managed vehicles, used to restore state after restarting the resource.'], GLOBAL]
+    ['characterId', ['Player · núcleo', 'Player · core'], ['ID do personagem ativo. Gravado ao carregar o personagem e em activeCharacter.', 'Active character ID. Written when the character loads and in activeCharacter.'], REPLICATED],
+    ['identity', ['Player · núcleo', 'Player · core'], ['Tabela de identidade do personagem, gravada ao carregar.', 'Character identity table, written on load.'], REPLICATED],
+    ['health', ['Player · núcleo', 'Player · core'], ['Vida do ped. O client grava ao levar dano; updateStatus/getStatus gravam a partir do ped.', 'Ped health. The client writes it when taking damage; updateStatus/getStatus write it from the ped.'], ['Replicado no load e no client; updateStatus grava sem replicar', 'Replicated on load and from the client; updateStatus writes without replication']],
+    ['armor', ['Player · núcleo', 'Player · core'], ['Colete do ped, mesmo fluxo de health.', 'Ped armor, same flow as health.'], ['Mesmo padrão de health', 'Same pattern as health']],
+    ['hunger', ['Player · núcleo', 'Player · core'], ['Fome. O client reduz decayAmountPerSecond por segundo quando hungerSystem.enable está ligado.', 'Hunger. The client lowers it by decayAmountPerSecond each second when hungerSystem.enable is on.'], REPLICATED],
+    ['thirst', ['Player · núcleo', 'Player · core'], ['Sede, mesmo fluxo de hunger (thirstSystem).', 'Thirst, same flow as hunger (thirstSystem).'], REPLICATED],
+    ['stress', ['Player · núcleo', 'Player · core'], ['Estresse, mesmo fluxo de hunger (stressSystem).', 'Stress, same flow as hunger (stressSystem).'], REPLICATED],
+    ['cash', ['Player · economia', 'Player · economy'], ['Dinheiro em mãos. Gravado no load e por addCharacterMoney/removeCharacterMoney (o Str_mobilities também grava).', 'Cash on hand. Written on load and by addCharacterMoney/removeCharacterMoney (Str_mobilities writes it too).'], REPLICATED],
+    ['bankMoney', ['Player · economia', 'Player · economy'], ['Saldo bancário, mesmo fluxo de cash.', 'Bank balance, same flow as cash.'], REPLICATED],
+    ['coins', ['Player · economia', 'Player · economy'], ['Saldo de coins, mesmo fluxo de cash.', 'Coin balance, same flow as cash.'], REPLICATED],
+    ['cryptos', ['Player · economia', 'Player · economy'], ['Tabela de cryptos gravada no load. Atenção: addCharacterMoney grava em crypto, não em cryptos.', 'Crypto table written on load. Note: addCharacterMoney writes to crypto, not cryptos.'], REPLICATED],
+    ['crypto', ['Player · economia', 'Player · economy'], ['Tabela de cryptos gravada por addCharacterMoney com moneyType crypto.', 'Crypto table written by addCharacterMoney with moneyType crypto.'], REPLICATED],
+    ['group_<grupo>', ['Player · grupos', 'Player · groups'], ['Nível do personagem no grupo (1 = mais alto). Gravado no load e por addCharacterGroup; removeCharacterGroup define nil.', 'Character level in the group (1 = highest). Written on load and by addCharacterGroup; removeCharacterGroup sets nil.'], REPLICATED],
+    ['Str:phase', ['Player · Str_creator / Str_style', 'Player · Str_creator / Str_style'], ['Etapa do fluxo: menu_picker, menu_creation, switching, spawning, ped_setup ou playing.', 'Flow stage: menu_picker, menu_creation, switching, spawning, ped_setup or playing.'], NOT_REPLICATED],
+    ['Str:pendingCharacter', ['Player · Str_creator', 'Player · Str_creator'], ['Durante a troca: {characterId, isFirstSpawn, position}. Limpo ao concluir ou falhar.', 'During a switch: {characterId, isFirstSpawn, position}. Cleared on success or failure.'], NOT_REPLICATED],
+    ['Str:charId', ['Player · Str_creator', 'Player · Str_creator'], ['ID do personagem escolhido; limpo enquanto a troca está pendente.', 'Chosen character ID; cleared while the switch is pending.'], NOT_REPLICATED],
+    ['seatbelt', ['Player · Str_hud', 'Player · Str_hud'], ['Boolean do cinto, gravado pelo client ao ligar/desligar.', 'Seatbelt boolean, written by the client on toggle.'], REPLICATED],
+    ['isTargeting', ['Player · Str_target', 'Player · Str_target'], ['Boolean: o jogador está mirando um alvo.', 'Boolean: the player is aiming at a target.'], REPLICATED],
+    ['targetActive', ['Player · Str_target', 'Player · Str_target'], ['Boolean: a interface de interação está aberta.', 'Boolean: the interaction UI is open.'], REPLICATED],
+    ['targetEntity', ['Player · Str_target', 'Player · Str_target'], ['Entity em foco; volta a 0 ao fechar.', 'Focused entity; resets to 0 on close.'], REPLICATED],
+    ['targetZone', ['Player · Str_target', 'Player · Str_target'], ['Zona em foco; nil ao fechar.', 'Focused zone; nil on close.'], REPLICATED],
+    ['targetOptions', ['Entity · Str_target', 'Entity · Str_target'], ['Opções de interação da entidade, gravadas pelo server.', 'Entity interaction options, written by the server.'], REPLICATED],
+    ['strMobilitiesVehicleId', ['Entity · Str_mobilities', 'Entity · Str_mobilities'], ['ID persistido do veículo.', 'Persisted vehicle ID.'], REPLICATED],
+    ['strMobilitiesVehicleData', ['Entity · Str_mobilities', 'Entity · Str_mobilities'], ['{id, netId, model, plate, tuning, engineHealth, bodyHealth, revision}.', '{id, netId, model, plate, tuning, engineHealth, bodyHealth, revision}.'], REPLICATED],
+    ['strMobilitiesFuel', ['Entity · Str_mobilities', 'Entity · Str_mobilities'], ['{netId, fuel}; gravado pelo server ao spawnar e pelo client ao consumir.', '{netId, fuel}; written by the server on spawn and by the client while consuming.'], REPLICATED],
+    ['Str:scripts', ['GlobalState · núcleo', 'GlobalState · core'], ['JSON com as pastas Str_* de scripts/, usado pela NUI para carregar os módulos.', 'JSON with the Str_* folders in scripts/, used by the NUI to load the modules.'], GLOBAL],
+    ['Str:language', ['GlobalState · núcleo', 'GlobalState · core'], ['Idioma de Str.config.language.', 'Language from Str.config.language.'], GLOBAL],
+    ['strMobilitiesVehicleEntities', ['GlobalState · Str_mobilities', 'GlobalState · Str_mobilities'], ['JSON dos veículos spawnados, para recuperar o estado após reiniciar.', 'JSON of the spawned vehicles, to recover state after a restart.'], GLOBAL]
 ];
 
 const t = (key) => window.StrI18n.t(key);
@@ -261,21 +262,26 @@ function normalize(value) {
     return String(value).toLocaleLowerCase();
 }
 
+/* Na primeira renderização os blocos entram com a animação de rolagem;
+   nas seguintes (busca, troca de aba ou idioma) aparecem na hora. */
+let firstRender = true;
+
+function enterClass() {
+    return firstRender ? 'reveal' : 'quick-in';
+}
+
 function renderApi(targetId, sections, query) {
     const target = document.getElementById(targetId);
     let visibleCount = 0;
     const markup = sections.map((section) => {
-        const title = pick(section.title);
-        const note = pick(section.note);
         const functions = section.functions.filter(([name, params, returns]) => {
-            const text = normalize([name, params, returns[0], returns[1], section.title.join(' '), section.note.join(' ')].join(' '));
+            const text = normalize([name, params, returns[0], returns[1], section.title.join(' ')].join(' '));
             return text.includes(query);
         });
         if (!functions.length) return '';
         visibleCount += functions.length;
         const rows = functions.map(([name, params, returns], i) => {
-            const text = pick(returns);
-            const [type, ...rest] = text.split(' — ');
+            const [type, ...rest] = pick(returns).split(' — ');
             return `
             <tr style="--i:${Math.min(i, 12)}">
                 <td><span class="api-name">Str.functions.${escapeHtml(name)}</span><span class="api-signature">(${escapeHtml(params)})</span></td>
@@ -285,9 +291,9 @@ function renderApi(targetId, sections, query) {
         }).join('');
         const label = functions.length === 1 ? t('api.function') : t('api.functions');
         return `
-            <section class="api-category reveal">
-                <div class="category-heading"><h3>${escapeHtml(title)}</h3><span>${functions.length} ${label}</span></div>
-                <p class="side-note">${escapeHtml(note)}</p>
+            <section class="api-category ${enterClass()}">
+                <div class="category-heading"><h3>${escapeHtml(pick(section.title))}</h3><span>${functions.length} ${label}</span></div>
+                <p class="side-note">${escapeHtml(pick(section.note))}</p>
                 <div class="api-table-wrap spot">
                     <table class="api-table">
                         <thead><tr><th>${t('api.colName')}</th><th>${t('api.colArgs')}</th><th>${t('api.colReturn')}</th></tr></thead>
@@ -304,7 +310,7 @@ function renderStatebags(query) {
     const list = document.getElementById('statebag-list');
     const visible = statebags.filter(([name, origin, desc, rep]) => normalize([name, ...origin, ...desc, ...rep].join(' ')).includes(query));
     list.innerHTML = visible.map(([name, origin, description, replication], i) => `
-        <article class="statebag-card reveal spot" style="--i:${i % 6}">
+        <article class="statebag-card ${enterClass()} spot" style="--i:${i % 6}">
             <h3>${escapeHtml(name)}</h3>
             <p>${escapeHtml(pick(description))}</p>
             <span class="state-meta">${escapeHtml(pick(origin))} · ${escapeHtml(pick(replication))}</span>
@@ -313,10 +319,11 @@ function renderStatebags(query) {
 }
 
 const tabs = Array.from(document.querySelectorAll('.tab'));
+const searchInput = document.getElementById('api-search');
 let activeTab = 'server';
 
 function updateSearch() {
-    const query = normalize(document.getElementById('api-search').value.trim());
+    const query = normalize(searchInput.value.trim());
     const serverCount = renderApi('server-api', serverSections, query);
     const clientCount = renderApi('client-api', clientSections, query);
     const stateCount = renderStatebags(query);
@@ -324,6 +331,7 @@ function updateSearch() {
     document.getElementById('client-count').textContent = clientCount;
     document.getElementById('empty-search').hidden = activeTab === 'server' ? serverCount > 0 : clientCount > 0;
     document.getElementById('statebag-list').hidden = stateCount === 0;
+    firstRender = false;
     document.dispatchEvent(new CustomEvent('str:rendered'));
 }
 
@@ -347,11 +355,24 @@ document.querySelectorAll('[data-tab-target]').forEach((link) => {
     });
 });
 
-document.getElementById('api-search').addEventListener('input', updateSearch);
+/* Busca com debounce: evita refazer as tabelas a cada tecla. */
+let searchTimer = 0;
+searchInput.addEventListener('input', () => {
+    window.clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(updateSearch, 140);
+});
+searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && searchInput.value) {
+        searchInput.value = '';
+        updateSearch();
+    }
+});
+
 document.addEventListener('keydown', (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
-        document.getElementById('api-search').focus();
+        searchInput.focus();
+        searchInput.select();
     }
 });
 

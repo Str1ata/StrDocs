@@ -185,14 +185,22 @@
                             <div class="pg-field">
                                 <label class="pg-label" for="pg-fn-select"><span data-i18n="pg.fnLabel">Função</span> <span id="pg-fn-side" class="pill pill-server">SERVER</span></label>
                                 <select id="pg-fn-select" class="pg-input"></select>
+                                <p class="pg-doc" id="pg-fn-doc"></p>
                             </div>
+                            <p class="pg-hint pg-lua-hint" data-i18n="pg.luaHint"></p>
                             <div id="pg-fn-args"></div>
                         </div>
 
                         <div id="pg-bag-pane" class="pg-pane" hidden>
                             <div class="pg-field">
-                                <label class="pg-label" for="pg-bag-select" data-i18n="pg.bagLabel">Statebag</label>
-                                <select id="pg-bag-select" class="pg-input"></select>
+                                <label class="pg-label" for="pg-bag-holder" data-i18n="pg.holder">Dono do statebag</label>
+                                <select id="pg-bag-holder" class="pg-input"></select>
+                            </div>
+                            <div class="pg-field">
+                                <label class="pg-label" for="pg-bag-key" data-i18n="pg.key">Chave</label>
+                                <input class="pg-input pg-lua" id="pg-bag-key" type="text" list="pg-bag-keys" spellcheck="false" autocomplete="off">
+                                <datalist id="pg-bag-keys"></datalist>
+                                <div class="pg-chips" id="pg-bag-chips"></div>
                             </div>
                             <div class="pg-field">
                                 <label class="pg-label" for="pg-bag-action" data-i18n="pg.action">Ação</label>
@@ -203,7 +211,8 @@
                             </div>
                             <div class="pg-field" id="pg-bag-value-wrap" hidden>
                                 <label class="pg-label" for="pg-bag-value" data-i18n="pg.newValue">Novo valor</label>
-                                <input class="pg-input" id="pg-bag-value" type="text" autocomplete="off">
+                                <input class="pg-input pg-lua" id="pg-bag-value" type="text" spellcheck="false" autocomplete="off" placeholder="nil">
+                                <span class="pg-hint" data-i18n="pg.bagValueHint"></span>
                             </div>
                         </div>
 
