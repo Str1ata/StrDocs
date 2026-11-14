@@ -1208,3 +1208,13 @@ select.pg-input optgroup {
     border-color: rgba(120, 190, 255, .55);
     box-shadow: 0 0 48px rgba(60, 140, 255, .35), inset 0 0 22px rgba(120, 190, 255, .18);
 }
+
+/* Logo no átomo via CSS (renderiza no GitHub Pages) */
+.art-core {
+    background-image:
+        url("logov1-dark.svg"),
+        radial-gradient(circle at 34% 28%, #1f4a8a, #0f2a55 60%, #081a38 100%);
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-size: 100px auto, cover;
+}
