@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Documentação da framework Str para FiveM e RedM: APIs client/server e statebags.">
+    <meta name="theme-color" content="#10121b">
+    <title>Str Framework — Documentação</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="#inicio" aria-label="Str Framework, início">
+            <span class="brand-mark">S</span>
+            <span>Str <span class="brand-muted">Framework</span></span>
+        </a>
+        <nav class="top-links" aria-label="Links externos">
+            <a href="https://github.com/Str1ata/StrDocs" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+        </nav>
+    </header>
+
+    <div class="layout" id="inicio">
+        <aside class="sidebar">
+            <p class="eyebrow">GUIA DA FRAMEWORK</p>
+            <a class="side-link active" href="#inicio">Visão geral</a>
+            <p class="side-heading">Referência</p>
+            <a class="side-link" href="#api">Str.functions</a>
+            <a class="side-link nested" href="#api" data-tab-target="server">Server</a>
+            <a class="side-link nested" href="#api" data-tab-target="client">Client</a>
+            <a class="side-link" href="#statebags">Statebags</a>
+            <a class="side-link" href="#exemplos">Exemplos práticos</a>
+            <div class="sidebar-note">
+                <span class="status-dot"></span>
+                FiveM · RedM · Lua 5.4
+            </div>
+        </aside>
+
+        <main>
+            <section class="hero">
+                <div class="hero-copy">
+                    <p class="eyebrow">DOCUMENTAÇÃO OFICIAL · PT-BR</p>
+                    <h1>Construa com a <span>Str</span>.</h1>
+                    <p class="hero-description">Referência das APIs públicas, dos statebags e dos padrões de integração da framework para FiveM e RedM.</p>
+                    <div class="hero-actions">
+                        <a class="button button-primary" href="#api">Explorar APIs <span aria-hidden="true">→</span></a>
+                        <a class="button button-secondary" href="#statebags">Ver statebags</a>
+                    </div>
+                </div>
+                <div class="hero-art" aria-hidden="true">
+                    <div class="art-orbit orbit-one"></div>
+                    <div class="art-orbit orbit-two"></div>
+                    <div class="art-core">STR</div>
+                    <span class="art-tag tag-client">CLIENT</span>
+                    <span class="art-tag tag-server">SERVER</span>
+                    <span class="art-tag tag-state">STATE</span>
+                </div>
+            </section>
+
+            <section class="notice">
+                <span class="notice-icon" aria-hidden="true">i</span>
+                <p>As funções de dados, economia, inventário e identidade são <strong>server-side</strong>. No client, use os helpers de tunnel para chamar funções registradas no server. As funções listadas refletem as definições encontradas em <code>Str.lua</code> e <code>client.lua</code>; módulos podem adicionar statebags próprios.</p>
+            </section>
+
+            <section class="section" id="api">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">REFERÊNCIA DA API</p>
+                        <h2>Str.functions</h2>
+                        <p class="section-intro">Pesquise por nome ou finalidade. Cada assinatura mostra os argumentos aceitos e o formato do retorno.</p>
+                    </div>
+                    <label class="search-box">
+                        <span class="search-icon" aria-hidden="true">⌕</span>
+                        <input id="api-search" type="search" placeholder="Buscar função..." autocomplete="off" aria-label="Buscar função">
+                        <kbd>⌘ K</kbd>
+                    </label>
+                </div>
+
+                <div class="tabs" role="tablist" aria-label="Lado da API">
+                    <button class="tab active" id="tab-server" role="tab" aria-selected="true" aria-controls="server-panel" data-tab="server">Server <span id="server-count" class="count"></span></button>
+                    <button class="tab" id="tab-client" role="tab" aria-selected="false" aria-controls="client-panel" data-tab="client">Client <span id="client-count" class="count"></span></button>
+                </div>
+
+                <div id="server-panel" class="tab-panel" role="tabpanel" aria-labelledby="tab-server">
+                    <p class="side-note">Chamadas server-side: <code>Str.functions.nome(...)</code>. Também são registradas como exports pelo núcleo. Argumentos que identificam personagem devem vir de contexto confiável do servidor.</p>
+                    <div id="server-api"></div>
+                </div>
+                <div id="client-panel" class="tab-panel" role="tabpanel" aria-labelledby="tab-client" hidden>
+                    <p class="side-note">O client expõe helpers para o tunnel. Use <code>syncTunnelFunction</code> para obter os valores de retorno da função registrada no server; <code>asyncTunnelFunction</code> dispara sem aguardar resposta.</p>
+                    <div id="client-api"></div>
+                </div>
+                <p id="empty-search" class="empty-state" hidden>Nenhuma função corresponde à busca.</p>
+            </section>
+
+            <section class="section" id="statebags">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">DADOS REATIVOS</p>
+                        <h2>Statebags</h2>
+                        <p class="section-intro">Chaves de estado publicadas pelo núcleo e pelos módulos presentes neste workspace.</p>
+                    </div>
+                </div>
+                <div class="state-intro">
+                    <p>Leia estado de jogador por <code>Player(source).state.chave</code> no server ou <code>LocalPlayer.state.chave</code> no client. Para entidades, use <code>Entity(entity).state.chave</code>. A flag <code>replicated</code> controla se a alteração é replicada; <code>true</code> não substitui a validação de dados no server.</p>
+                    <pre><code>-- Client: observar uma mudança replicada no jogador local
+AddStateBagChangeHandler('health', nil, function(bagName, key, value)
+    if bagName == ('player_' .. GetPlayerServerId(PlayerId())) then
+        print(('Novo %s: %s'):format(key, value))
+    end
+end)</code></pre>
+                </div>
+                <div id="statebag-list" class="statebag-list"></div>
+                <p class="side-note">Chaves temporárias de cache e fila do núcleo que são limpas durante a inicialização não são tratadas como API pública estável. Consulte o código do módulo antes de depender de statebags específicos de uma extensão.</p>
+            </section>
+
+            <section class="section" id="exemplos">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">DO CÓDIGO AO RESULTADO</p>
+                        <h2>Exemplos práticos</h2>
+                        <p class="section-intro">Os comentários mostram o retorno esperado para os valores de exemplo.</p>
+                    </div>
+                </div>
+                <div class="example-grid">
+                    <article class="example-card">
+                        <div class="card-topline"><span class="pill pill-server">SERVER</span><span>Identidade e saldo</span></div>
+                        <pre><code>local characterId = Str.functions.getCharacterId(source)
+if not characterId then return end
+
+local balance = Str.functions.getCharacterMoneyAmount(
+    characterId, 'cash'
+)
+print(balance)
+-- Exemplo de retorno: 125
+
+local added = Str.functions.addCharacterMoney(
+    characterId, 25, 'cash'
+)
+print(added)
+-- Exemplo de retorno: true</code></pre>
+                    </article>
+                    <article class="example-card">
+                        <div class="card-topline"><span class="pill pill-server">SERVER</span><span>Inventário</span></div>
+                        <pre><code>local item = Str.functions.getItemFromCharacterInventory(
+                            characterId, 'backpackS'
+)
+print(json.encode(item))
+-- Exemplo de retorno:
+                        -- {"name":"backpackS","amount":1}</code></pre>
+                    </article>
+                    <article class="example-card">
+                        <div class="card-topline"><span class="pill pill-client">CLIENT</span><span>Consultar config no server</span></div>
+                        <pre><code>local items = Str.functions.syncTunnelFunction(
+    'getItemsConfig'
+)
+print(type(items))
+-- Exemplo de retorno: "table"
+print(items.backpackS.label)
+-- Exemplo de retorno na configuração atual: "Backpack pequena"</code></pre>
+                    </article>
+                    <article class="example-card">
+                        <div class="card-topline"><span class="pill pill-server">SERVER</span><span>Verificar grupo</span></div>
+                        <pre><code>local level = Str.functions.hasCharacterGroup(
+                            characterId, 'Staff'
+)
+print(level)
+                        -- Exemplo de retorno: 3 (nível do grupo)
+
+local hierarchy, name =
+    Str.functions.getCharacterGroupHierarchy(
+                                characterId, 'Staff'
+    )
+print(hierarchy, name)
+                        -- Exemplo de retorno: 3, "Admin"</code></pre>
+                    </article>
+                </div>
+            </section>
+
+            <footer class="footer">
+                <span>Str Framework · Documentação comunitária</span>
+                <a href="#inicio">Voltar ao topo ↑</a>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>
