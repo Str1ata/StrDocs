@@ -1226,3 +1226,9 @@ select.pg-input optgroup {
 .pg-line pre {
     white-space: pre-wrap;
 }
+
+/* Etiqueta SERVER fora da área do logo */
+.tag-server {
+    right: 0;
+    top: 196px;
+}
