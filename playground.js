@@ -355,7 +355,7 @@
         GroveStreet: { hierarchies: ['Leader', 'Lieutenant', 'Soldier', 'Recruit'] }
     };
 
-    /* Trecho de configuration/framework.json devolvido por getConfig. */
+    /* getConfig retorna configuration/framework.json e os catálogos de idioma. */
     const CONFIG = {
         language: 'en-us',
         whitelist: { enable: true, hdwidBan: true },
@@ -365,6 +365,12 @@
         hungerSystem: { enable: true, decayAmountPerSecond: 0.009 },
         thirstSystem: { enable: true, decayAmountPerSecond: 0.007 },
         stressSystem: { enable: true, decayAmountPerSecond: 0.0 }
+    };
+    const LANGUAGE = {
+        Str: {
+            checking_identifiers: 'Checking identifiers...',
+            checking_ban_status: 'Checking ban status...'
+        }
     };
 
     /* script_config.inventoryItems do Str_style. */
@@ -508,12 +514,12 @@
 
     /* Tunnel */
     const CORE_SERVER_TUNNEL = {
-        getConfig: () => [clone(CONFIG)],
+        getConfig: () => [{ config: clone(CONFIG), language: clone(LANGUAGE) }],
         getGroupsConfig: () => [clone(GROUPS)],
         getVehiclesConfig: () => [clone(VEHICLES)],
         getItemsConfig: () => [clone(ITEMS)]
     };
-    const NOT_SIMULATED_SERVER = ['getLocaleCatalog', 'getInventoryConfig', 'getTargetConfig', 'getMobilitiesConfig'];
+    const NOT_SIMULATED_SERVER = ['getInventoryConfig', 'getTargetConfig', 'getMobilitiesConfig'];
 
     function callServerHandler(name, args) {
         const handler = W.serverTunnel[name] || CORE_SERVER_TUNNEL[name];
