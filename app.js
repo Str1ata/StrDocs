@@ -16,7 +16,7 @@ const serverSections = [
             ['asyncTunnelFunction', 'source: number, functionName: string, ...args', ['nil — dispara a chamada e não espera resposta.', 'nil — fires the call without waiting for a reply.']],
             ['getTunnelFunction', 'async: boolean, source: number, functionName: string, ...args', ['...any — base das duas acima. Sync: valores do client (após 5 s passa a checar a cada 500 ms; após 10 min devolve nil). Async: nil.', '...any — base of the two above. Sync: client values (after 5 s it polls every 500 ms; after 10 min it returns nil). Async: nil.']],
             ['registerTunnelFunction', 'funcName: string, func: function', ['nil — registra um handler server que o client pode chamar.', 'nil — registers a server handler the client can call.']],
-            ['updatePlayersData', 'source: number, async?: boolean', ['nil — grava no banco o cache do personagem ativo: inventories, banks, membros de groups, vehicles, closets, posição e status. Sem personagem, não faz nada.', 'nil — writes the active character cache to the database: inventories, banks, group members, vehicles, closets, position and status. Does nothing without a character.']]
+            ['updatePlayersData', 'source: number, async?: boolean', ['nil — grava no banco o cache do personagem ativo: inventories, banks, membros de groups, vehicles (incluindo locked), closets, posição e status. Sem personagem, não faz nada.', 'nil — writes the active character cache to the database: inventories, banks, group members, vehicles (including locked), closets, position and status. Does nothing without a character.']]
         ]
     },
     {
@@ -169,8 +169,8 @@ const serverSections = [
     {
         title: ['Veículos do personagem', 'Character vehicles'],
         note: [
-            'Os veículos carregados do banco ficam indexados por vehicle_id, com {model, lastGarage, lastLocation, state, tuning, fuelLevel, taxesDueAt, odometer, damages, rentalExpiresAt, inventory, arrested, dismantled}. addCharacterVehicle, getCharacterVehicle e removeCharacterVehicle usam o nome do modelo como chave, então não encontram os veículos vindos do banco. Str.lua:622-647, 2121-2201.',
-            'Vehicles loaded from the database are keyed by vehicle_id, with {model, lastGarage, lastLocation, state, tuning, fuelLevel, taxesDueAt, odometer, damages, rentalExpiresAt, inventory, arrested, dismantled}. addCharacterVehicle, getCharacterVehicle and removeCharacterVehicle key by model name, so they do not find vehicles loaded from the database. Str.lua:622-647, 2121-2201.'
+            'Os veículos carregados do banco ficam indexados por vehicle_id, com {model, lastGarage, lastLocation, state, locked, tuning, fuelLevel, taxesDueAt, odometer, damages, rentalExpiresAt, inventory, arrested, dismantled}. addCharacterVehicle e removeCharacterVehicle alteram o cache e usam o nome/ID passado como chave. As funções de lock aceitam vehicleId opcional para consultar/alterar o veículo individual sem ambiguidade. Str.lua:691-718, 2369-2415, 2451-2501.',
+            'Vehicles loaded from the database are keyed by vehicle_id, with {model, lastGarage, lastLocation, state, locked, tuning, fuelLevel, taxesDueAt, odometer, damages, rentalExpiresAt, inventory, arrested, dismantled}. addCharacterVehicle and removeCharacterVehicle update the cache using the supplied name/ID as the key. Lock functions accept an optional vehicleId to read or update an individual vehicle without ambiguity. Str.lua:691-718, 2369-2415, 2451-2501.'
         ],
         functions: [
             ['getCharacterVehicleData', 'characterId: number', ['table — mapa de veículos em cache; {} se offline.', 'table — cached vehicle map; {} if offline.']],
@@ -178,7 +178,9 @@ const serverSections = [
             ['addCharacterVehicle', 'characterId: number, vehicleName: string, data?: table', ['boolean — false se o modelo não existir em Str.vehicles. Sem data, usa um registro padrão (fuelLevel 100, damages zerados, tunings {}). Retorna true mesmo offline.', 'boolean — false if the model is not in Str.vehicles. Without data, uses a default record (fuelLevel 100, zeroed damages, tunings {}). Returns true even offline.']],
             ['removeCharacterVehicle', 'characterId: number, vehicleName: string', ['boolean — true se existia vehicles[vehicleName] e foi removido.', 'boolean — true if vehicles[vehicleName] existed and was removed.']],
             ['getCharacterVehicles', 'characterId: number', ['table — o mesmo que getCharacterVehicleData.', 'table — same as getCharacterVehicleData.']],
-            ['getCharacterVehicle', 'characterId: number, vehicleName: string', ['table | nil — vehicles[vehicleName].', 'table | nil — vehicles[vehicleName].']]
+            ['getCharacterVehicle', 'characterId: number, vehicleName: string', ['table | nil — vehicles[vehicleName].', 'table | nil — vehicles[vehicleName].']],
+            ['getVehicleLockedStatus', 'characterId: number, vehicleName: string, vehicleId?: number', ['boolean — valor locked em cache (true também aceita 1 numérico); com vehicleId consulta a chave vehicle_id e valida model.', 'boolean — cached locked value (true also accepts numeric 1); with vehicleId, reads the vehicle_id key and validates model.']],
+            ['setVehicleLockedStatus', 'characterId: number, vehicleName: string, locked: boolean, vehicleId?: number', ['boolean — atualiza locked no cache; com vehicleId altera o registro exato e retorna false se ID/modelo não coincidir. Persista com updatePlayersData(source, true).', 'boolean — updates locked in cache; with vehicleId, changes the exact record and returns false if ID/model do not match. Persist with updatePlayersData(source, true).']]
         ]
     },
     {

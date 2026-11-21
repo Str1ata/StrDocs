@@ -85,6 +85,11 @@
             "local level = Str.functions.hasCharacterGroup(\n    characterId, 'Staff'\n)\nprint(level)\n-- Exemplo de retorno: 3 (nível do grupo)\n\nlocal hierarchy, name =\n    Str.functions.getCharacterGroupHierarchy(\n        characterId, 'Staff'\n    )\nprint(hierarchy, name)\n-- Exemplo de retorno: 3, \"Admin\"",
             "local level = Str.functions.hasCharacterGroup(\n    characterId, 'Staff'\n)\nprint(level)\n-- Example return: 3 (group level)\n\nlocal hierarchy, name =\n    Str.functions.getCharacterGroupHierarchy(\n        characterId, 'Staff'\n    )\nprint(hierarchy, name)\n-- Example return: 3, \"Admin\""
         ],
+        'ex.c5.title': ['Alternar a tranca do veículo', 'Toggle a vehicle lock'],
+        'ex.c5.code': [
+            "local characterId = Str.functions.getCharacterId(source)\nif not characterId then return end\n\nlocal vehicleId = 17\nlocal vehicleName = 'fq2'\nlocal locked = Str.functions.getVehicleLockedStatus(\n    characterId, vehicleName, vehicleId\n)\nprint(locked)\n-- Exemplo de retorno: false\n\nlocal updated = Str.functions.setVehicleLockedStatus(\n    characterId, vehicleName, not locked, vehicleId\n)\nif updated then\n    Str.functions.updatePlayersData(source, true)\nend\nprint(updated, Str.functions.getVehicleLockedStatus(\n    characterId, vehicleName, vehicleId\n))\n-- Exemplo de retorno: true, true",
+            "local characterId = Str.functions.getCharacterId(source)\nif not characterId then return end\n\nlocal vehicleId = 17\nlocal vehicleName = 'fq2'\nlocal locked = Str.functions.getVehicleLockedStatus(\n    characterId, vehicleName, vehicleId\n)\nprint(locked)\n-- Example return: false\n\nlocal updated = Str.functions.setVehicleLockedStatus(\n    characterId, vehicleName, not locked, vehicleId\n)\nif updated then\n    Str.functions.updatePlayersData(source, true)\nend\nprint(updated, Str.functions.getVehicleLockedStatus(\n    characterId, vehicleName, vehicleId\n))\n-- Example return: true, true"
+        ],
 
         'pg.eyebrow': ['TESTE NA HORA', 'TRY IT LIVE'],
         'pg.title': ['Execute seu exemplo', 'Run your example'],

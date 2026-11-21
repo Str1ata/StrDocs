@@ -1111,6 +1111,33 @@
         if (truthy(characterId) && truthy(vehicleName)) return [or(S.getCharacterVehicleData(characterId)[0][vehicleName], undefined)];
         return [undefined];
     };
+    S.getVehicleLockedStatus = (characterId, vehicleName, vehicleId) => {
+        if (!truthy(characterId) || !truthy(vehicleName)) return [false];
+        const vehicles = S.getCharacterVehicles(characterId)[0] || {};
+        let vehicle;
+        if (truthy(vehicleId)) {
+            vehicle = vehicles[vehicleId];
+            if (!vehicle || String(vehicle.model) !== String(vehicleName)) return [false];
+        } else {
+            vehicle = S.getCharacterVehicle(characterId, vehicleName)[0];
+        }
+        return [!!vehicle && (vehicle.locked === true || Number(vehicle.locked) === 1)];
+    };
+    S.setVehicleLockedStatus = (characterId, vehicleName, locked, vehicleId) => {
+        if (!truthy(characterId) || !truthy(vehicleName) || typeof locked !== 'boolean') return [false];
+        const vehicles = S.getCharacterVehicles(characterId)[0] || {};
+        if (truthy(vehicleId)) {
+            const vehicle = vehicles[vehicleId];
+            if (!vehicle || String(vehicle.model) !== String(vehicleName)) return [false];
+            vehicle.locked = locked;
+            S.setCharacterVehicleData(characterId, vehicles);
+            return [true];
+        }
+        const vehicle = S.getCharacterVehicle(characterId, vehicleName)[0];
+        if (!vehicle) return [false];
+        vehicle.locked = locked;
+        return S.addCharacterVehicle(characterId, vehicleName, vehicle);
+    };
 
     /* Adicionadas por módulos */
     S.getStyleInventoryClothingItems = (framework) => {
