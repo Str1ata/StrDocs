@@ -417,7 +417,7 @@
                     ],
                     economy: { cash: 125, bankMoney: 2400, coins: 10, crypto: { BTC: 0.5 } },
                     vehicles: {
-                        17: { model: 'fq2', lastGarage: 'pillbox', lastLocation: { x: 215.3, y: -810.1, z: 30.7 }, state: 1, tuning: {}, fuelLevel: 72.5, taxesDueAt: null, odometer: 1530.4, damages: { body: 0, engine: 0 }, rentalExpiresAt: null, inventory: {}, arrested: false, dismantled: false }
+                        17: { model: 'fq2', lastGarage: 'pillbox', lastLocation: { x: 215.3, y: -810.1, z: 30.7 }, state: 1, tunings: {}, fuelLevel: 72.5, taxesDueAt: null, odometer: 1530.4, damages: { body: 0, engine: 0 }, rentalExpiresAt: null, inventory: {}, arrested: false, dismantled: false }
                     },
                     clothes: {
                         faceData: { selections: { nose: 3, eyes: 1 } },
@@ -1063,80 +1063,100 @@
     };
 
     /* Veículos do personagem */
-    S.getCharacterVehicleData = (characterId) => {
+    S.getCharacterVehiclesData = (characterId) => {
         if (truthy(characterId)) {
             const p = pd(keyByChar(characterId));
             if (p) return [p.vehicles || {}];
         }
         return [{}];
     };
-    S.setCharacterVehicleData = (characterId, vehicleData) => {
+    S.setCharacterVehiclesData = (characterId, vehicleData) => {
         if (truthy(characterId)) {
             const p = pd(keyByChar(characterId));
             if (p) p.vehicles = or(vehicleData, {});
         }
         return [];
     };
-    S.addCharacterVehicle = (characterId, vehicleName, data) => {
-        if (truthy(characterId) && truthy(vehicleName)) {
-            if (!VEHICLES[vehicleName]) return [false];
-            const vehicles = S.getCharacterVehicleData(characterId)[0];
-            const record = truthy(data) ? data : {
-                rentalTime: -1,
-                lastLocation: { x: 0, y: 0, z: 0 },
-                fuelLevel: 100.0,
-                damages: { body: 0, engine: 0, tires: [0, 0, 0, 0, 0, 0, 0, 0], doors: [0, 0, 0, 0], windows: [0, 0, 0, 0, 0, 0, 0], dirtLevel: 0 },
-                nitro: { cylindersPercent: [0, 0, 0, 0, 0, 0, 0, 0] },
-                tunings: {}
-            };
-            vehicles[vehicleName] = record;
-            S.setCharacterVehicleData(characterId, vehicles);
-            return [true];
-        }
-        return [false];
-    };
-    S.removeCharacterVehicle = (characterId, vehicleName) => {
-        if (truthy(characterId) && truthy(vehicleName)) {
-            const vehicles = S.getCharacterVehicleData(characterId)[0];
-            if (truthy(vehicles[vehicleName])) {
-                delete vehicles[vehicleName];
-                S.setCharacterVehicleData(characterId, vehicles);
-                return [true];
-            }
-        }
-        return [false];
-    };
-    S.getCharacterVehicles = (characterId) => (truthy(characterId) ? S.getCharacterVehicleData(characterId) : [{}]);
-    S.getCharacterVehicle = (characterId, vehicleName) => {
-        if (truthy(characterId) && truthy(vehicleName)) return [or(S.getCharacterVehicleData(characterId)[0][vehicleName], undefined)];
-        return [undefined];
-    };
-    S.getVehicleLockedStatus = (characterId, vehicleName, vehicleId) => {
-        if (!truthy(characterId) || !truthy(vehicleName)) return [false];
-        const vehicles = S.getCharacterVehicles(characterId)[0] || {};
-        let vehicle;
-        if (truthy(vehicleId)) {
-            vehicle = vehicles[vehicleId];
-            if (!vehicle || String(vehicle.model) !== String(vehicleName)) return [false];
-        } else {
-            vehicle = S.getCharacterVehicle(characterId, vehicleName)[0];
-        }
-        return [!!vehicle && (vehicle.locked === true || Number(vehicle.locked) === 1)];
-    };
-    S.setVehicleLockedStatus = (characterId, vehicleName, locked, vehicleId) => {
-        if (!truthy(characterId) || !truthy(vehicleName) || typeof locked !== 'boolean') return [false];
-        const vehicles = S.getCharacterVehicles(characterId)[0] || {};
-        if (truthy(vehicleId)) {
-            const vehicle = vehicles[vehicleId];
-            if (!vehicle || String(vehicle.model) !== String(vehicleName)) return [false];
-            vehicle.locked = locked;
-            S.setCharacterVehicleData(characterId, vehicles);
-            return [true];
-        }
-        const vehicle = S.getCharacterVehicle(characterId, vehicleName)[0];
+    S.setCharacterVehicleData = (characterId, vehicleId, vehicleData) => {
+        if (!truthy(characterId) || !truthy(vehicleId) || !vehicleData || typeof vehicleData !== 'object') return [false];
+        const vehicles = S.getCharacterVehiclesData(characterId)[0];
+        const vehicle = vehicles[vehicleId] || vehicles[String(vehicleId)];
         if (!vehicle) return [false];
-        vehicle.locked = locked;
-        return S.addCharacterVehicle(characterId, vehicleName, vehicle);
+        Object.assign(vehicle, clone(vehicleData));
+        S.setCharacterVehiclesData(characterId, vehicles);
+        return [true];
+    };
+    S.addCharacterVehicle = (characterId, vehicleModel, data) => {
+        if (!truthy(characterId) || !truthy(vehicleModel) || !VEHICLES[vehicleModel]) return [false];
+        const vehicles = S.getCharacterVehiclesData(characterId)[0];
+        const numericIds = Object.keys(vehicles).map(Number).filter((id) => Number.isInteger(id) && id > 0);
+        const vehicleId = Math.max(0, ...numericIds) + 1;
+        const record = Object.assign({
+            model: vehicleModel,
+            lastGarage: null,
+            lastLocation: {},
+            state: 0,
+            locked: 1,
+            tunings: {},
+            fuelLevel: 10,
+            taxesDueAt: null,
+            odometer: 0,
+            damages: {},
+            rentalExpiresAt: null,
+            inventory: {},
+            arrested: false,
+            dismantled: false
+        }, clone(data || {}), { model: vehicleModel });
+        vehicles[vehicleId] = record;
+        S.setCharacterVehiclesData(characterId, vehicles);
+        return [true, vehicleId];
+    };
+    S.removeCharacterVehicle = (characterId, vehicleIdOrModel) => {
+        if (!truthy(characterId) || !truthy(vehicleIdOrModel)) return [false];
+        const vehicles = S.getCharacterVehiclesData(characterId)[0];
+        let vehicleId = Number(vehicleIdOrModel);
+        if (!Number.isInteger(vehicleId) || vehicleId < 1) {
+            vehicleId = Object.keys(vehicles).find((id) => vehicles[id] && vehicles[id].model === vehicleIdOrModel);
+        }
+        if (!vehicleId || !vehicles[vehicleId]) return [false];
+        delete vehicles[vehicleId];
+        delete vehicles[String(vehicleId)];
+        S.setCharacterVehiclesData(characterId, vehicles);
+        return [true];
+    };
+    S.getCharacterVehicles = (characterId) => (truthy(characterId) ? S.getCharacterVehiclesData(characterId) : [{}]);
+    S.getCharacterVehicle = (characterId, vehicleIdOrModel) => {
+        if (!truthy(characterId) || !truthy(vehicleIdOrModel)) return [undefined];
+        const vehicles = S.getCharacterVehiclesData(characterId)[0];
+        const numericId = Number(vehicleIdOrModel);
+        const vehicle = Number.isInteger(numericId) && numericId > 0
+            ? vehicles[numericId] || vehicles[String(numericId)]
+            : Object.values(vehicles).find((entry) => entry && entry.model === vehicleIdOrModel);
+        return [vehicle];
+    };
+    S.getVehicleTunings = (characterId, vehicleId) => {
+        const vehicle = S.getCharacterVehicle(characterId, vehicleId)[0];
+        return [vehicle && vehicle.tunings || {}];
+    };
+    S.setVehicleTunings = (characterId, vehicleId, tunings) => {
+        if (!tunings || typeof tunings !== 'object') return [false];
+        return S.setCharacterVehicleData(characterId, vehicleId, { tunings });
+    };
+    S.getVehicleLockedStatus = (characterId, vehicleId) => {
+        const vehicle = S.getCharacterVehicle(characterId, vehicleId)[0];
+        return [vehicle ? vehicle.locked === true || Number(vehicle.locked) === 1 : undefined];
+    };
+    S.setVehicleLockedStatus = (characterId, vehicleId, locked) => {
+        if (typeof locked !== 'boolean') return [false];
+        return S.setCharacterVehicleData(characterId, vehicleId, { locked });
+    };
+    S.getVehicleInventory = (characterId, vehicleId) => {
+        const vehicle = S.getCharacterVehicle(characterId, vehicleId)[0];
+        return [vehicle && vehicle.inventory || {}];
+    };
+    S.updateVehicleInventory = (characterId, vehicleId, inventory) => {
+        if (!inventory || typeof inventory !== 'object') return [false];
+        return S.setCharacterVehicleData(characterId, vehicleId, { inventory });
     };
 
     /* Adicionadas por módulos */
@@ -1204,8 +1224,11 @@
         vehicleModelOrHash: { def: "'adder'", chips: ["'adder'", "'fq2'", "'panto'", String(ADDER_HASH), "'blista'"] },
         vehicleModel: { def: "'adder'", chips: ["'adder'", "'fq2'", "'panto'", "'blista'"] },
         vehicleHash: { def: String(ADDER_HASH), chips: [String(ADDER_HASH), String(joaat('fq2')), String(joaat('panto')), '123'] },
-        vehicleName: { def: "'adder'", chips: ["'adder'", "'fq2'", "'panto'", "'tank'"] },
-        vehicleData: { def: '{}', chips: ['{}', "{ adder = { fuelLevel = 50 } }"] },
+        vehicleId: { def: '17', chips: ['17', '18', '999'] },
+        vehicleIdOrModel: { def: '17', chips: ['17', '18', "'fq2'", '999'] },
+        vehicleData: { def: '{}', chips: ['{}', '{ fuelLevel = 50 }'] },
+        tunings: { def: '{ mods = {} }', chips: ['{ mods = {} }', '{ mods = { engine = 2 } }'] },
+        inventory: { def: '{}', chips: ['{}', '{ trunk = { items = {} } }'] },
         identifiers: { def: "{ license = '2f6c1d4e9a7b3c5d8e0f' }", chips: ["{ license = '2f6c1d4e9a7b3c5d8e0f' }", "{ discord = '391234567890123456' }", "{ steam = 'not found' }"] },
         status: { def: 'true', chips: ['true', 'false'] },
         reason: { def: "'Uso de cheat'", chips: ["'Uso de cheat'", "'Toxicidade'"] },
@@ -1238,9 +1261,13 @@
         getUsersByGroup: { group: { def: "'Staff'" } },
         removeItemFromCharacterInventory: { item: { def: "'9mmAmmo'" }, quantity: { def: '5' } },
         getItemFromCharacterInventory: { item: { def: "'glockPistol'" }, metadata: { def: "{ serial = 'GLK-0042', durability = 300 }" } },
-        addCharacterVehicle: { vehicleName: { def: "'panto'" } },
-        removeCharacterVehicle: { vehicleName: { def: "'fq2'" } },
-        getCharacterVehicle: { vehicleName: { def: "'fq2'" } },
+        addCharacterVehicle: { vehicleModel: { def: "'panto'" } },
+        removeCharacterVehicle: { vehicleIdOrModel: { def: '17' } },
+        getCharacterVehicle: { vehicleIdOrModel: { def: '17' } },
+        getVehicleLockedStatus: { vehicleId: { def: '17' } },
+        setVehicleLockedStatus: { vehicleId: { def: '17' } },
+        getVehicleInventory: { vehicleId: { def: '17' } },
+        updateVehicleInventory: { vehicleId: { def: '17' } },
         getUserIdByCharacterId: { characterId: { def: '42' } },
         setBanStatus: { userId: { def: '8' } },
         getBanStatus: { userId: { def: '9' } },
@@ -1257,7 +1284,8 @@
     };
     const MULTI_RETURNS = {
         getCharacterGroupHierarchy: ['level', 'name'],
-        applyStyleClothingPurchase: ['ok', 'message']
+        applyStyleClothingPurchase: ['ok', 'message'],
+        addCharacterVehicle: ['ok', 'vehicleId']
     };
 
     /* "characterId: number, slot?: number, ...args" → lista de parâmetros. */
