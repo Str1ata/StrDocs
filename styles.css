@@ -60,7 +60,7 @@ code {
     padding: 0 42px;
     position: sticky;
     top: 0;
-    z-index: 5;
+    z-index: 3;
     backdrop-filter: blur(16px);
 }
 
@@ -738,7 +738,7 @@ pre {
         padding: 9px 0;
         position: sticky;
         top: 58px;
-        z-index: 4;
+        z-index: 2;
         backdrop-filter: blur(12px);
     }
 
