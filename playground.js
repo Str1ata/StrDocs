@@ -1009,7 +1009,13 @@
                     const w = S.getItemWeight(d.name)[0];
                     if (truthy(w)) weight.used += w * d.amount;
                 });
-                throw new LuaError('No such export getInventoryDefaultWeight in resource Str');
+                weight.total = 30;
+                pairs(p.inventory || []).forEach(([, d]) => {
+                    if (d.name === 'backpack' && d.metadata && truthy(d.metadata.weight)) {
+                        weight.total += toNum(d.metadata.weight);
+                    }
+                });
+                weight.available = weight.total - weight.used;
             }
         }
         return [weight];
